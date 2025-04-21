@@ -13,3 +13,7 @@
     public static *** d(...);
     public static *** v(...);
 }
+
+-keep class com.dergoogler.mmrl.webui.model.ModId { *; }
+-keep class com.dergoogler.mmrl.webui.interfaces.** { *; }
+-keep class com.dergoogler.mmrl.webuix.ui.activity.webui.interfaces.KernelSUInterface { *; }

@@ -19,7 +19,9 @@ import com.dergoogler.mmrl.ext.managerVersion
 import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.ui.component.Failed
 import com.dergoogler.mmrl.ui.component.Loading
+import com.dergoogler.mmrl.webui.interfaces.WXOptions
 import com.dergoogler.mmrl.webui.model.JavaScriptInterface
+import com.dergoogler.mmrl.webui.model.ModId
 import com.dergoogler.mmrl.webui.screen.WebUIScreen
 import com.dergoogler.mmrl.webui.util.rememberWebUIOptions
 import com.dergoogler.mmrl.webui.webUiConfig
@@ -54,9 +56,9 @@ class WebUIActivity : BaseActivity() {
             }
         }
 
-        val modId = intent.getStringExtra("MOD_ID")
+        val mModId = intent.getStringExtra("MOD_ID")
 
-        if (modId.isNullOrEmpty()) {
+        if (mModId.isNullOrEmpty()) {
             setBaseContent {
                 Failed(
                     message = stringResource(id = R.string.missing_mod_id),
@@ -65,6 +67,8 @@ class WebUIActivity : BaseActivity() {
 
             return
         }
+
+        val modId = ModId(mModId)
 
         setBaseContent {
             var isLoading by remember { mutableStateOf(true) }
@@ -122,14 +126,14 @@ class WebUIActivity : BaseActivity() {
                 webView = webView,
                 options = options,
                 interfaces = listOf(
-                    JavaScriptInterface(
-                        name = "ksu",
-                        instance = KernelSUInterface(
+                    KernelSUInterface.factory(
+                        WXOptions(
                             context = this@WebUIActivity,
                             webView = webView,
-                            debug = userPrefs.developerMode
-                        )
-                    ),
+                            modId = modId
+                        ),
+                        userPrefs.developerMode
+                    )
                 )
             )
         }

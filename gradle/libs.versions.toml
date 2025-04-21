@@ -1,6 +1,6 @@
 [versions]
 agp = "8.9.1"
-mmrl = "5de1c5dd68"
+mmrl = "75967e36ef"
 libsu = "6.0.0"
 ksp = "2.0.0-1.0.21"
 kotlin = "2.0.0"
@@ -19,12 +19,12 @@ androidxDataStore = "1.1.1"
 androidxCoreSplashscreen = "1.0.1"
 
 [libraries]
-mmrl-webui = { group = "com.github.MMRLApp.MMRL", name = "webui", version.ref = "mmrl" }
-mmrl-platform = { group = "com.github.MMRLApp.MMRL", name = "platform", version.ref = "mmrl" }
-mmrl-hiddenApi = { group = "com.github.MMRLApp.MMRL", name = "hidden-api", version.ref = "mmrl" }
-mmrl-ui = { group = "com.github.MMRLApp.MMRL", name = "ui", version.ref = "mmrl" }
-mmrl-ext = { group = "com.github.MMRLApp.MMRL", name = "ext", version.ref = "mmrl" }
-mmrl-datastore = { group = "com.github.MMRLApp.MMRL", name = "datastore", version.ref = "mmrl" }
+mmrl-webui = { group = "dev.mmrl.MMRL", name = "webui", version.ref = "mmrl" }
+mmrl-platform = { group = "dev.mmrl.MMRL", name = "platform", version.ref = "mmrl" }
+mmrl-hiddenApi = { group = "dev.mmrl.MMRL", name = "hidden-api", version.ref = "mmrl" }
+mmrl-ui = { group = "dev.mmrl.MMRL", name = "ui", version.ref = "mmrl" }
+mmrl-ext = { group = "dev.mmrl.MMRL", name = "ext", version.ref = "mmrl" }
+mmrl-datastore = { group = "dev.mmrl.MMRL", name = "datastore", version.ref = "mmrl" }
 libsu-core = { group = "com.github.topjohnwu.libsu", name = "core", version.ref = "libsu" }
 libsu-service = { group = "com.github.topjohnwu.libsu", name = "service", version.ref = "libsu" }
 libsu-io = { module = "com.github.topjohnwu.libsu:io", version.ref = "libsu" }
