@@ -24,7 +24,7 @@ import com.dergoogler.mmrl.webui.screen.WebUIScreen
 import com.dergoogler.mmrl.webui.util.rememberWebUIOptions
 import com.dergoogler.mmrl.webui.webUiConfig
 import com.dergoogler.mmrl.webuix.R
-import com.dergoogler.mmrl.webuix.interfaces.KernelSUInterface
+import com.dergoogler.mmrl.webuix.ui.activity.webui.interfaces.KernelSUInterface
 import com.dergoogler.mmrl.webuix.util.BaseActivity
 import com.dergoogler.mmrl.webuix.util.setBaseContent
 import dagger.hilt.android.AndroidEntryPoint

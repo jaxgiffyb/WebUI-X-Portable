@@ -4,6 +4,8 @@ import androidx.compose.runtime.Composable
 import com.dergoogler.mmrl.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.ext.toFormattedDateSafely
 import com.dergoogler.mmrl.platform.content.LocalModule
+import com.topjohnwu.superuser.Shell
+import com.topjohnwu.superuser.ShellUtils
 
 val LocalModule.versionDisplay get(): String {
     val included = "\\(.*?${versionCode}.*?\\)".toRegex()
