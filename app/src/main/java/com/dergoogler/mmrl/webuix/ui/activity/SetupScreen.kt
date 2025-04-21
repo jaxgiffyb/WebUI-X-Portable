@@ -156,8 +156,6 @@ fun SetupScreen(setWorkingMode: (WorkingMode) -> Unit) {
                         enabled = currentSelection != null
                                 && currentSelection!!.platform != Platform.NonRoot,
                         onClick = {
-                            if (currentSelection == null) return@Button
-
                             setWorkingMode(
                                 when (currentSelection!!.platform) {
                                     Platform.Magisk -> WorkingMode.MODE_MAGISK
