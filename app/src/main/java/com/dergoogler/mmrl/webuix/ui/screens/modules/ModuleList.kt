@@ -33,6 +33,8 @@ fun ModulesList(
             items = list,
             key = { it.id }
         ) { module ->
+            if (!module.features.webui) return@items
+
             ModuleItem(
                 module = module,
             )
