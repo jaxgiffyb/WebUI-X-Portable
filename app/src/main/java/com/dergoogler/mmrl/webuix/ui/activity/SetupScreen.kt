@@ -24,7 +24,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -35,40 +34,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dergoogler.mmrl.datastore.model.WorkingMode
-import com.dergoogler.mmrl.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.ext.exception.BrickException
 import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.ui.component.card.Card
 import com.dergoogler.mmrl.ui.component.listItem.ListItem
 import com.dergoogler.mmrl.webuix.R
 import com.dergoogler.mmrl.webuix.model.FeaturedManager
-import kotlinx.coroutines.launch
-
-val managers = listOf(
-    FeaturedManager(
-        name = "Magisk",
-        icon = com.dergoogler.mmrl.ui.R.drawable.magisk_logo,
-        platform = Platform.Magisk,
-    ),
-
-    FeaturedManager(
-        name = "KernelSU",
-        icon = com.dergoogler.mmrl.ui.R.drawable.kernelsu_logo,
-        platform = Platform.KernelSU,
-    ),
-
-    FeaturedManager(
-        name = "KernelSU Next",
-        icon = com.dergoogler.mmrl.ui.R.drawable.kernelsu_next_logo,
-        platform = Platform.KsuNext,
-    ),
-
-    FeaturedManager(
-        name = "APatch",
-        icon = com.dergoogler.mmrl.ui.R.drawable.brand_android,
-        platform = Platform.APatch
-    ),
-)
+import com.dergoogler.mmrl.webuix.model.managers
+import com.dergoogler.mmrl.webuix.util.toWorkingMode
 
 @Composable
 fun SetupScreen(setWorkingMode: (WorkingMode) -> Unit) {
@@ -137,7 +110,7 @@ fun SetupScreen(setWorkingMode: (WorkingMode) -> Unit) {
                                 ListItem(
                                     modifier = Modifier.weight(1f),
                                     icon = manager.icon,
-                                    title = manager.name
+                                    title = stringResource(manager.name)
                                 )
 
                                 RadioButton(
@@ -156,15 +129,7 @@ fun SetupScreen(setWorkingMode: (WorkingMode) -> Unit) {
                         enabled = currentSelection != null
                                 && currentSelection!!.platform != Platform.NonRoot,
                         onClick = {
-                            setWorkingMode(
-                                when (currentSelection!!.platform) {
-                                    Platform.Magisk -> WorkingMode.MODE_MAGISK
-                                    Platform.KernelSU -> WorkingMode.MODE_KERNEL_SU
-                                    Platform.KsuNext -> WorkingMode.MODE_KERNEL_SU_NEXT
-                                    Platform.APatch -> WorkingMode.MODE_APATCH
-                                    else -> throw BrickException("Unsupported Platform")
-                                }
-                            )
+                            setWorkingMode(currentSelection!!.platform.toWorkingMode())
                         },
                         modifier = Modifier
                             .fillMaxWidth()

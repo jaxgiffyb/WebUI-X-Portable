@@ -27,16 +27,22 @@ import com.dergoogler.mmrl.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.ext.isLocalWifiUrl
 import com.dergoogler.mmrl.ext.navigateSingleTopTo
 import com.dergoogler.mmrl.ext.none
+import com.dergoogler.mmrl.ext.nullable
 import com.dergoogler.mmrl.ext.takeTrue
 import com.dergoogler.mmrl.ui.component.TopAppBar
 import com.dergoogler.mmrl.ui.component.TopAppBarTitle
 import com.dergoogler.mmrl.ui.component.listItem.ListButtonItem
 import com.dergoogler.mmrl.ui.component.listItem.ListEditTextSwitchItem
 import com.dergoogler.mmrl.ui.component.listItem.ListHeader
+import com.dergoogler.mmrl.ui.component.listItem.ListRadioCheckItem
 import com.dergoogler.mmrl.ui.component.listItem.ListSwitchItem
+import com.dergoogler.mmrl.ui.component.listItem.RadioOptionItem
 import com.dergoogler.mmrl.ui.providable.LocalNavController
 import com.dergoogler.mmrl.webuix.R
+import com.dergoogler.mmrl.webuix.model.FeaturedManager
+import com.dergoogler.mmrl.webuix.model.managers
 import com.dergoogler.mmrl.webuix.ui.navigation.graphs.SettingsScreen
+import com.dergoogler.mmrl.webuix.util.toWorkingMode
 import com.dergoogler.mmrl.webuix.viewmodel.LocalSettings
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,14 +52,6 @@ fun SettingsScreen() {
     val viewModel = LocalSettings.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val navController = LocalNavController.current
-    val browser = LocalUriHandler.current
-
-//    var workingModeBottomSheet by remember { mutableStateOf(false) }
-//    if (workingModeBottomSheet) WorkingModeBottomSheet(
-//        onClose = {
-//            workingModeBottomSheet = false
-//        }
-//    )
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -74,7 +72,7 @@ fun SettingsScreen() {
                 .verticalScroll(rememberScrollState())
         ) {
             ListButtonItem(
-//                icon = R.drawable.color_swatch,
+                icon = R.drawable.color_swatch,
                 title = stringResource(id = R.string.settings_app_theme),
                 desc = stringResource(id = R.string.settings_app_theme_desc),
                 onClick = {
@@ -82,34 +80,21 @@ fun SettingsScreen() {
                 }
             )
 
-//            val workingModeIcon = when (userPreferences.workingMode) {
-//                WorkingMode.MODE_MAGISK -> R.drawable.magisk_logo
-//                WorkingMode.MODE_KERNEL_SU -> R.drawable.kernelsu_logo
-//                WorkingMode.MODE_KERNEL_SU_NEXT -> R.drawable.kernelsu_next_logo
-//                WorkingMode.MODE_APATCH -> R.drawable.brand_android
-//                WorkingMode.MODE_NON_ROOT -> R.drawable.shield_lock
-//                else -> R.drawable.components
-//            }
-//
-//            val workingModeText = when (userPreferences.workingMode) {
-//                WorkingMode.MODE_MAGISK -> R.string.working_mode_magisk_title
-//                WorkingMode.MODE_KERNEL_SU -> R.string.working_mode_kernelsu_title
-//                WorkingMode.MODE_KERNEL_SU_NEXT -> R.string.working_mode_kernelsu_next_title
-//                WorkingMode.MODE_APATCH -> R.string.working_mode_apatch_title
-//                WorkingMode.MODE_NON_ROOT -> R.string.setup_non_root_title
-//                else -> R.string.settings_root_none
-//            }
-//
-//            ListButtonItem(
-//                icon = workingModeIcon,
-//                title = stringResource(id = R.string.setup_mode),
-//                desc = stringResource(
-//                    id = workingModeText
-//                ),
-//                onClick = {
-//                    workingModeBottomSheet = true
-//                }
-//            )
+            val manager: FeaturedManager? =
+                managers.find { userPreferences.workingMode.toPlatform() == it.platform }
+
+            manager.nullable { mng ->
+                ListRadioCheckItem(
+                    icon = mng.icon,
+                    title = stringResource(id = R.string.platform),
+                    desc = stringResource(mng.name),
+                    options = managers.map { it.toRadioOption() },
+                    onConfirm = {
+                        viewModel.setWorkingMode(it.value.toWorkingMode())
+                    },
+                    value = mng.platform
+                )
+            }
 
             ListHeader(title = stringResource(id = R.string.webui))
 
