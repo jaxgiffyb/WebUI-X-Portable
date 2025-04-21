@@ -30,11 +30,9 @@ fun ModulesList(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         items(
-            items = list,
+            items = list.filter { it.features.webui },
             key = { it.id }
         ) { module ->
-            if (!module.features.webui) return@items
-
             ModuleItem(
                 module = module,
             )
