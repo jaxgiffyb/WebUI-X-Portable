@@ -246,8 +246,7 @@ jobs:
         run: |
           BUILD_DATE=$(date +"%Y-%m-%d %H:%M:%S")
           COMMIT_COUNT=$(git rev-list --count HEAD)
-          VERSION=$((31320 + COMMIT_COUNT))
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "VERSION=$COMMIT_COUNT" >> $GITHUB_ENV
           echo "BUILD_DATE=$BUILD_DATE" >> $GITHUB_ENV
 
       - name: Upload files to Telegram
