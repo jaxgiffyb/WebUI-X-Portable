@@ -10,12 +10,12 @@ plugins {
 val baseAppName = "WebUI X"
 
 android {
-    namespace = "com.dergoogler.mmrl.webuix"
+    namespace = "com.dergoogler.mmrl.wx"
     compileSdk = 35
 
     defaultConfig {
         applicationId = namespace
-        versionName = commitId
+        versionName = "v$commitCount"
         versionCode = commitCount
     }
 
