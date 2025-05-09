@@ -385,7 +385,7 @@ jobs:
         uses: r0adkll/upload-google-play@v1.1.3
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
-          packageName: com.dergoogler.mmrl
+          packageName: com.dergoogler.mmrl.wx
           releaseFiles: ${{ steps.find_aab.outputs.AAB_PATH }}
           track: production
           status: completed
