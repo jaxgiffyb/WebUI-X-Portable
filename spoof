@@ -12,7 +12,7 @@ echo "Generated words:"
 echo "com         -> $word1"
 echo "dergoogler  -> $word2"
 echo "mmrl        -> $word3"
-echo "webuix      -> $word3"
+echo "webuix      -> $word4"
 echo ""
 
 # Export variables for use in find -exec
