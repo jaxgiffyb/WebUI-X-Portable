@@ -34,8 +34,6 @@ class MainActivity : BaseActivity() {
         splashScreen.setKeepOnScreenCondition { isLoading }
 
         setBaseContent {
-
-
             val userPreferences by userPreferencesRepository.data
                 .collectAsStateWithLifecycle(initialValue = null)
 
