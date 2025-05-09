@@ -7,9 +7,11 @@ import android.widget.Toast
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.dergoogler.mmrl.platform.Platform
+import com.dergoogler.mmrl.webui.interfaces.WXInterface
 import com.dergoogler.mmrl.webui.interfaces.WXOptions
-import com.dergoogler.mmrl.webui.interfaces.WebUIInterface
 import com.dergoogler.mmrl.webui.model.JavaScriptInterface
+import com.dergoogler.mmrl.webuix.util.createRootShell
+import com.dergoogler.mmrl.webuix.util.withNewRootShell
 import com.topjohnwu.superuser.CallbackList
 import com.topjohnwu.superuser.ShellUtils
 import com.topjohnwu.superuser.internal.UiThreadHandler
@@ -20,7 +22,7 @@ import java.util.concurrent.CompletableFuture
 class KernelSUInterface(
     wxOptions: WXOptions,
     private val debug: Boolean = false,
-) : WebUIInterface(wxOptions) {
+) : WXInterface(wxOptions) {
     override var name: String = "ksu"
     companion object {
         fun factory(wxOptions: WXOptions, debug: Boolean) = JavaScriptInterface(
@@ -66,7 +68,7 @@ class KernelSUInterface(
 
     @JavascriptInterface
     fun exec(cmd: String): String {
-        return Platform.withNewRootShell(
+        return withNewRootShell(
             globalMnt = true,
             debug = debug
         ) { ShellUtils.fastCmd(this, cmd) }
@@ -104,7 +106,7 @@ class KernelSUInterface(
         processOptions(finalCommand, options)
         finalCommand.append(cmd)
 
-        val result = Platform.withNewRootShell(
+        val result = withNewRootShell(
             globalMnt = true,
             debug = debug
         ) {
@@ -141,7 +143,7 @@ class KernelSUInterface(
             finalCommand.append(command)
         }
 
-        val shell = Platform.createRootShell(
+        val shell = createRootShell(
             globalMnt = true,
             debug = debug
         )

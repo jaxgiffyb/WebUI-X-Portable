@@ -33,6 +33,7 @@ import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.platform.content.LocalModule
 import com.dergoogler.mmrl.platform.content.State
 import com.dergoogler.mmrl.platform.file.SuFile.Companion.toFormattedFileSize
+import com.dergoogler.mmrl.ui.component.LabelItemDefaults
 import com.dergoogler.mmrl.webuix.ui.activity.webui.WebUIActivity
 import com.dergoogler.mmrl.webuix.util.toFormattedDateSafely
 import com.dergoogler.mmrl.webuix.util.versionDisplay
@@ -133,8 +134,10 @@ fun ModuleItem(
 
             LabelItem(
                 text = module.size.toFormattedFileSize(),
-                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                style = LabelItemDefaults.style.copy(
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                )
             )
         }
     }

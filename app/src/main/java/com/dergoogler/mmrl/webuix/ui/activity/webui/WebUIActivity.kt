@@ -17,17 +17,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.lifecycleScope
 import com.dergoogler.mmrl.ext.managerVersion
 import com.dergoogler.mmrl.platform.Platform
+import com.dergoogler.mmrl.platform.model.ModId
 import com.dergoogler.mmrl.ui.component.Failed
 import com.dergoogler.mmrl.ui.component.Loading
 import com.dergoogler.mmrl.webui.interfaces.WXOptions
-import com.dergoogler.mmrl.webui.model.JavaScriptInterface
-import com.dergoogler.mmrl.webui.model.ModId
 import com.dergoogler.mmrl.webui.screen.WebUIScreen
 import com.dergoogler.mmrl.webui.util.rememberWebUIOptions
 import com.dergoogler.mmrl.webui.webUiConfig
 import com.dergoogler.mmrl.webuix.R
 import com.dergoogler.mmrl.webuix.ui.activity.webui.interfaces.KernelSUInterface
 import com.dergoogler.mmrl.webuix.util.BaseActivity
+import com.dergoogler.mmrl.webuix.util.initPlatform
 import com.dergoogler.mmrl.webuix.util.setBaseContent
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
@@ -50,10 +50,7 @@ class WebUIActivity : BaseActivity() {
         rootView = findViewById(android.R.id.content)
 
         lifecycleScope.launch {
-            Platform.init {
-                context = this@WebUIActivity
-                platform = userPrefs.workingMode.toPlatform()
-            }
+            initPlatform(userPrefs.workingMode.toPlatform())
         }
 
         val mModId = intent.getStringExtra("MOD_ID")

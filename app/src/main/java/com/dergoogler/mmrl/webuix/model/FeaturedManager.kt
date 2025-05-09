@@ -5,7 +5,7 @@ import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.dergoogler.mmrl.platform.Platform
-import com.dergoogler.mmrl.ui.component.listItem.RadioOptionItem
+import com.dergoogler.mmrl.ui.component.dialog.RadioOptionItem
 import com.dergoogler.mmrl.webuix.R
 
 data class FeaturedManager(

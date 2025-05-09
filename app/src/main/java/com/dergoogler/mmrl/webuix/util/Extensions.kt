@@ -7,6 +7,7 @@ import com.dergoogler.mmrl.ext.exception.BrickException
 import com.dergoogler.mmrl.ext.toFormattedDateSafely
 import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.platform.content.LocalModule
+import com.topjohnwu.superuser.Shell
 
 val LocalModule.versionDisplay
     get(): String {
@@ -40,4 +41,27 @@ fun Platform.toWorkingMode() = when (this) {
     Platform.KsuNext -> WorkingMode.MODE_KERNEL_SU_NEXT
     Platform.APatch -> WorkingMode.MODE_APATCH
     else -> throw BrickException("Unsupported Platform")
+}
+
+
+inline fun <T> withNewRootShell(
+    globalMnt: Boolean = false,
+    debug: Boolean = false,
+    commands: Array<String> = arrayOf("su"),
+    block: Shell.() -> T,
+): T {
+    return createRootShell(globalMnt, debug, commands).use(block)
+}
+
+fun createRootShell(
+    globalMnt: Boolean = false,
+    debug: Boolean = false,
+    commands: Array<String> = arrayOf("su"),
+): Shell {
+    Shell.enableVerboseLogging = debug
+    val builder = Shell.Builder.create()
+    if (globalMnt) {
+        builder.setFlags(Shell.FLAG_MOUNT_MASTER)
+    }
+    return builder.build(*commands)
 }

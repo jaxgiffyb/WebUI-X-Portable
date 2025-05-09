@@ -13,8 +13,8 @@ enum class MainScreen(
     Modules(
         route = "ModulesScreen",
         label = R.string.modules,
-        icon = R.drawable.keyframes,
-        iconFilled = R.drawable.keyframes_filled
+        icon = R.drawable.stack_2,
+        iconFilled = R.drawable.stack_2_filled
     ),
 
     Settings(

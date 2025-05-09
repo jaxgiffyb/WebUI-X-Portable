@@ -20,9 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
-import com.dergoogler.mmrl.datastore.model.WorkingMode
 import com.dergoogler.mmrl.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.ext.isLocalWifiUrl
 import com.dergoogler.mmrl.ext.navigateSingleTopTo
@@ -36,7 +34,6 @@ import com.dergoogler.mmrl.ui.component.listItem.ListEditTextSwitchItem
 import com.dergoogler.mmrl.ui.component.listItem.ListHeader
 import com.dergoogler.mmrl.ui.component.listItem.ListRadioCheckItem
 import com.dergoogler.mmrl.ui.component.listItem.ListSwitchItem
-import com.dergoogler.mmrl.ui.component.listItem.RadioOptionItem
 import com.dergoogler.mmrl.ui.providable.LocalNavController
 import com.dergoogler.mmrl.webuix.R
 import com.dergoogler.mmrl.webuix.model.FeaturedManager

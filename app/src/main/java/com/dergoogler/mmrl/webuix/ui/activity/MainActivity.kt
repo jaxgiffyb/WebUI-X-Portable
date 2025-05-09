@@ -1,6 +1,7 @@
 package com.dergoogler.mmrl.webuix.ui.activity
 
 import android.os.Bundle
+import android.util.Log
 import androidx.compose.animation.Crossfade
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.runtime.LaunchedEffect
@@ -17,6 +18,7 @@ import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.webuix.ui.activity.webui.WebUIActivity
 import com.dergoogler.mmrl.webuix.ui.screens.MainScreen
 import com.dergoogler.mmrl.webuix.util.BaseActivity
+import com.dergoogler.mmrl.webuix.util.initPlatform
 import com.dergoogler.mmrl.webuix.util.setBaseContent
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -44,14 +46,8 @@ class MainActivity : BaseActivity() {
                 checkNotNull(userPreferences)
             }
 
-
             LaunchedEffect(userPreferences) {
-
-                Platform.init {
-                    context = baseContext
-                    platform = Platform.KsuNext
-                }
-
+                baseContext.initPlatform(preferences.workingMode.toPlatform())
                 setActivityEnabled<WebUIActivity>(preferences.workingMode.isRoot)
             }
 
