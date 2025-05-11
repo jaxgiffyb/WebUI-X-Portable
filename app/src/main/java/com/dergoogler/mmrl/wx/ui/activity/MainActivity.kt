@@ -45,7 +45,6 @@ class MainActivity : BaseActivity() {
             }
 
             LaunchedEffect(userPreferences) {
-                baseContext.initPlatform(preferences.workingMode.toPlatform())
                 setActivityEnabled<WebUIActivity>(preferences.workingMode.isRoot)
             }
 

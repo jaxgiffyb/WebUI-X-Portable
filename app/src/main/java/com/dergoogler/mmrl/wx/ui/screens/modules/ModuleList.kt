@@ -27,7 +27,7 @@ fun ModulesList(
         state = state,
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         items(
             items = list.filter { it.features.webui },

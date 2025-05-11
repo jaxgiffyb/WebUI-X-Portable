@@ -13,12 +13,14 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.NavHost
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -30,13 +32,16 @@ import com.dergoogler.mmrl.ext.navigatePopUpTo
 import com.dergoogler.mmrl.ext.none
 import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.ui.providable.LocalNavController
+import com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity
 import com.dergoogler.mmrl.wx.ui.navigation.MainScreen
 import com.dergoogler.mmrl.wx.ui.navigation.graphs.modulesScreen
 import com.dergoogler.mmrl.wx.ui.navigation.graphs.settingsScreen
+import com.dergoogler.mmrl.wx.util.initPlatform
 
 @Composable
 fun MainScreen() {
     val userPreferences = LocalUserPreferences.current
+    val context = LocalContext.current
 
     val navController = LocalNavController.current
     val snackbarHostState = remember { SnackbarHostState() }
@@ -50,6 +55,10 @@ fun MainScreen() {
                 MainScreen.Settings
             )
         }
+    }
+
+    LaunchedEffect(Unit) {
+        context.initPlatform(userPreferences.workingMode.toPlatform())
     }
 
     Scaffold(
