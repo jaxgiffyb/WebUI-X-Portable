@@ -154,9 +154,10 @@ fun SettingsScreen() {
             )
 
             ListSwitchItem(
-                enabled = userPreferences.developerMode,
+                enabled = userPreferences.developerMode && !userPreferences.useWebUiDevUrl,
                 title = stringResource(R.string.settings_security_inject_eruda),
-                checked = userPreferences.enableErudaConsole,
+                desc = stringResource(R.string.settings_security_inject_eruda_desc),
+                checked = userPreferences.enableErudaConsole && !userPreferences.useWebUiDevUrl,
                 onChange = viewModel::setEnableEruda
             )
         }
