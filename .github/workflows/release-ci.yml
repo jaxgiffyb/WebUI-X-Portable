@@ -371,6 +371,18 @@ jobs:
                 echo keyStore='${{ github.workspace }}/key.jks' >> signing.properties
                 echo ${{ secrets.KEY_STORE }} | base64 --decode > ${{ github.workspace }}/key.jks
             fi
+            
+      - name: Set up JDK
+        uses: actions/setup-java@v4.7.1
+        with:
+          distribution: 'zulu'
+          java-version: 21
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4.3.1
+        with:
+            validate-wrappers: true
+            cache-cleanup: always
 
       - name: Bundle with Gradle
         run: chmod 755 ./gradlew && ./gradlew bundlePlaystore
