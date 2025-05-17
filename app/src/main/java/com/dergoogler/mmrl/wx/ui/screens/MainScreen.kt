@@ -123,9 +123,10 @@ private fun BottomNav(
                 alwaysShowLabel = true,
                 selected = selected,
                 onClick = {
+                    if (selected) return@NavigationBarItem
+
                     navController.navigatePopUpTo(
                         route = screen.route,
-                        restoreState = !selected
                     )
                 }
             )
