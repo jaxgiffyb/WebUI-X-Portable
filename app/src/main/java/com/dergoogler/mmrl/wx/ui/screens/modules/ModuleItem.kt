@@ -15,17 +15,22 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.dergoogler.mmrl.datastore.providable.LocalUserPreferences
+import com.dergoogler.mmrl.ext.fadingEdge
 import com.dergoogler.mmrl.ui.component.LabelItem
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.ui.component.card.Card
@@ -35,10 +40,14 @@ import com.dergoogler.mmrl.ext.nullply
 import com.dergoogler.mmrl.ext.takeTrue
 import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.platform.content.LocalModule
+import com.dergoogler.mmrl.platform.content.LocalModule.Companion.config
 import com.dergoogler.mmrl.platform.content.LocalModule.Companion.hasWebUI
 import com.dergoogler.mmrl.platform.content.State
+import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.platform.file.SuFile.Companion.toFormattedFileSize
+import com.dergoogler.mmrl.platform.model.ModId.Companion.moduleDir
 import com.dergoogler.mmrl.ui.component.LabelItemDefaults
+import com.dergoogler.mmrl.ui.component.LocalCover
 import com.dergoogler.mmrl.webui.activity.WXActivity.Companion.launchWebUIX
 import com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity
 import com.dergoogler.mmrl.wx.util.toFormattedDateSafely
@@ -62,6 +71,10 @@ fun ModuleItem(
         context.launchWebUIX<WebUIActivity>(module.id)
     }
 
+    val config = remember(module) {
+        module.config
+    }
+
     Card(
         modifier = {
             column = Modifier.padding(0.dp)
@@ -74,6 +87,26 @@ fun ModuleItem(
         },
         onClick = clicker
     ) {
+        config.cover.nullable(menu.showCover) {
+            val file = SuFile(module.id.moduleDir, it)
+
+            file.exists {
+                LocalCover(
+                    modifier = Modifier.fadingEdge(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Transparent,
+                                Color.Black,
+                            ),
+                            startY = Float.POSITIVE_INFINITY,
+                            endY = 0f
+                        ),
+                    ),
+                    inputStream = it.newInputStream(),
+                )
+            }
+        }
+
         Row(
             modifier = Modifier.padding(all = 16.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -85,8 +118,10 @@ fun ModuleItem(
                 verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
                 Text(
-                    text = module.name,
-                    style = MaterialTheme.typography.titleMedium
+                    text = config.name ?: module.name,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.titleSmall
                 )
 
                 Text(
@@ -94,7 +129,7 @@ fun ModuleItem(
                         id = R.string.author,
                         module.versionDisplay, module.author
                     ),
-                    style = MaterialTheme.typography.bodyMedium,
+                    style = MaterialTheme.typography.bodySmall,
                     textDecoration = decoration,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -105,7 +140,7 @@ fun ModuleItem(
                             id = R.string.update_at,
                             module.lastUpdated.toFormattedDateSafely
                         ),
-                        style = MaterialTheme.typography.bodyMedium,
+                        style = MaterialTheme.typography.bodySmall,
                         textDecoration = decoration,
                         color = MaterialTheme.colorScheme.outline
                     )
@@ -117,9 +152,11 @@ fun ModuleItem(
             modifier = Modifier
                 .alpha(alpha = alpha)
                 .padding(horizontal = 16.dp),
-            text = module.description,
-            style = MaterialTheme.typography.bodyMedium,
+            text = config.description ?: module.description,
+            style = MaterialTheme.typography.bodySmall,
             textDecoration = decoration,
+            maxLines = 5,
+            overflow = TextOverflow.Ellipsis,
             color = MaterialTheme.colorScheme.outline
         )
 
