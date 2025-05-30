@@ -1,7 +1,6 @@
 package com.dergoogler.mmrl.wx.util
 
 import android.content.Context
-import android.util.Log
 import androidx.compose.runtime.Composable
 import com.dergoogler.mmrl.datastore.model.WorkingMode
 import com.dergoogler.mmrl.datastore.providable.LocalUserPreferences
@@ -13,6 +12,46 @@ import com.dergoogler.mmrl.platform.content.LocalModule
 import com.dergoogler.mmrl.platform.stub.IServiceManager
 import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.CoroutineScope
+import java.io.BufferedInputStream
+import java.io.File
+import java.io.FileOutputStream
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
+
+fun Context.extractZipFromAssets(
+    assetName: String,
+    outputDir: File
+) {
+    if (!outputDir.exists()) {
+        outputDir.mkdirs()
+    }
+
+    val buffer = ByteArray(4096)
+
+    this.assets.open(assetName).use { inputStream ->
+        ZipInputStream(BufferedInputStream(inputStream)).use { zipStream ->
+            var entry: ZipEntry? = zipStream.nextEntry
+            while (entry != null) {
+                val filePath = File(outputDir, entry.name)
+
+                if (entry.isDirectory) {
+                    filePath.mkdirs()
+                } else {
+                    filePath.parentFile?.mkdirs()
+
+                    FileOutputStream(filePath).use { output ->
+                        var len: Int
+                        while (zipStream.read(buffer).also { len = it } > 0) {
+                            output.write(buffer, 0, len)
+                        }
+                    }
+                }
+                zipStream.closeEntry()
+                entry = zipStream.nextEntry
+            }
+        }
+    }
+}
 
 val LocalModule.versionDisplay
     get(): String {
