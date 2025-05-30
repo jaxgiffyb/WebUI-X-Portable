@@ -31,9 +31,11 @@ import com.dergoogler.mmrl.ext.nullable
 import com.dergoogler.mmrl.ext.takeTrue
 import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.platform.content.LocalModule
+import com.dergoogler.mmrl.platform.content.LocalModule.Companion.hasWebUI
 import com.dergoogler.mmrl.platform.content.State
 import com.dergoogler.mmrl.platform.file.SuFile.Companion.toFormattedFileSize
 import com.dergoogler.mmrl.ui.component.LabelItemDefaults
+import com.dergoogler.mmrl.webui.activity.WXActivity.Companion.launchWebUIX
 import com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity
 import com.dergoogler.mmrl.wx.util.toFormattedDateSafely
 import com.dergoogler.mmrl.wx.util.versionDisplay
@@ -49,12 +51,9 @@ fun ModuleItem(
     val menu = userPreferences.modulesMenu
     val context = LocalContext.current
 
-    val canWenUIAccessed = Platform.isAlive && module.features.webui && module.state != State.REMOVE
+    val canWenUIAccessed = Platform.isAlive && module.hasWebUI && module.state != State.REMOVE
     val clicker: (() -> Unit)? = canWenUIAccessed nullable {
-        WebUIActivity.start(
-            context = context,
-            modId = module.id
-        )
+        context.launchWebUIX<WebUIActivity>(module.id)
     }
 
     Card(
@@ -127,7 +126,7 @@ fun ModuleItem(
         ) {
             userPreferences.developerMode.takeTrue {
                 LabelItem(
-                    text = module.id,
+                    text = module.id.toString(),
                     upperCase = false
                 )
             }

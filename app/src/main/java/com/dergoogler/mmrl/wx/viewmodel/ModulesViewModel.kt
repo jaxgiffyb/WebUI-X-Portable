@@ -11,6 +11,8 @@ import com.dergoogler.mmrl.datastore.model.Option
 import com.dergoogler.mmrl.datastore.repository.UserPreferencesRepository
 import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.platform.content.LocalModule
+import com.dergoogler.mmrl.platform.content.LocalModule.Companion.hasAction
+import com.dergoogler.mmrl.platform.content.LocalModule.Companion.hasWebUI
 import com.dergoogler.mmrl.platform.content.State
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -81,13 +83,13 @@ class ModulesViewModel @Inject constructor(
                 }
 
                 val b = if (menu.pinAction) {
-                    a.sortedByDescending { it.features.action }
+                    a.sortedByDescending { it.hasAction }
                 } else {
                     a
                 }
 
                 if (menu.pinWebUI) {
-                    b.sortedByDescending { it.features.webui }
+                    b.sortedByDescending { it.hasWebUI }
                 } else {
                     b
                 }

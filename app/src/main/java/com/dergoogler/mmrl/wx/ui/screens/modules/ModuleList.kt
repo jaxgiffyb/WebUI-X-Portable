@@ -15,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.dergoogler.mmrl.platform.content.LocalModule.Companion.hasWebUI
 
 @Composable
 fun ModulesList(
@@ -30,7 +31,7 @@ fun ModulesList(
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         items(
-            items = list.filter { it.features.webui },
+            items = list.filter { it.hasWebUI },
             key = { it.id }
         ) { module ->
             ModuleItem(

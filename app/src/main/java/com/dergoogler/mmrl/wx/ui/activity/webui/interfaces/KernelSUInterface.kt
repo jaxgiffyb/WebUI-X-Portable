@@ -13,33 +13,30 @@ import com.dergoogler.mmrl.wx.util.createRootShell
 import com.dergoogler.mmrl.wx.util.withNewRootShell
 import com.topjohnwu.superuser.CallbackList
 import com.topjohnwu.superuser.ShellUtils
-import com.topjohnwu.superuser.internal.UiThreadHandler
+import com.topjohnwu.superuser.internal.WaitRunnable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.concurrent.CompletableFuture
 
 class KernelSUInterface(
     wxOptions: WXOptions,
-    private val debug: Boolean = false,
 ) : WXInterface(wxOptions) {
+    // Defined a name for the interface (window.ksu)
     override var name: String = "ksu"
-    companion object {
-        fun factory(wxOptions: WXOptions, debug: Boolean) = JavaScriptInterface(
-            clazz = KernelSUInterface::class.java,
-            initargs = arrayOf(
-                wxOptions,
-                debug
-            ),
-            parameterTypes = arrayOf(
-                WXOptions::class.java,
-                Boolean::class.java
-            )
-        )
+
+    // Defined a logging tag for debugging
+    override var tag: String = "KernelSUInterface"
+
+    @JavascriptInterface
+    fun mmrl(): Boolean {
+        return true
     }
 
     @JavascriptInterface
     fun toast(msg: String) {
-        runPost {
+        post {
             Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
         }
     }
@@ -48,28 +45,27 @@ class KernelSUInterface(
     fun fullScreen(enable: Boolean) {
         runMainLooperPost {
             if (enable) {
-                hideSystemUI(activity.window)
+                hideSystemUI(window)
             } else {
-                showSystemUI(activity.window)
+                showSystemUI(window)
             }
         }
     }
 
     @JavascriptInterface
     fun moduleInfo(): String {
-        console.warn("ksu.moduleInfo() have been removed due to security reasons.")
+        console.warn("$name.moduleInfo() have been removed due to security reasons.")
         val currentModuleInfo = JSONObject()
         currentModuleInfo.put("moduleDir", null)
         currentModuleInfo.put("id", null)
         return currentModuleInfo.toString()
     }
 
-
     @JavascriptInterface
     fun exec(cmd: String): String {
         return withNewRootShell(
             globalMnt = true,
-            debug = debug
+            debug = options.debug
         ) { ShellUtils.fastCmd(this, cmd) }
     }
 
@@ -105,23 +101,36 @@ class KernelSUInterface(
         processOptions(finalCommand, options)
         finalCommand.append(cmd)
 
-        val result = withNewRootShell(
-            globalMnt = true,
-            debug = debug
-        ) {
-            newJob().add(finalCommand.toString()).to(ArrayList(), ArrayList()).exec()
+        scope.launch(Dispatchers.IO) {
+            val result = withNewRootShell(
+                globalMnt = true,
+                debug = this@KernelSUInterface.options.debug
+            ) {
+                newJob().add(finalCommand.toString()).to(ArrayList(), ArrayList()).exec()
+            }
+            val stdout = result.out.joinToString(separator = "\n")
+            val stderr = result.err.joinToString(separator = "\n")
+
+            val jsCode =
+                "(function() { try { ${callbackFunc}(${result.code}, ${
+                    JSONObject.quote(
+                        stdout
+                    )
+                }, ${JSONObject.quote(stderr)}); } catch(e) { console.error(e); } })();"
+
+            runJs(jsCode)
         }
-        val stdout = result.out.joinToString(separator = "\n")
-        val stderr = result.err.joinToString(separator = "\n")
+    }
 
-        val jsCode =
-            "(function() { try { ${callbackFunc}(${result.code}, ${
-                JSONObject.quote(
-                    stdout
-                )
-            }, ${JSONObject.quote(stderr)}); } catch(e) { console.error(e); } })();"
-
-        runJs(jsCode)
+    // ensure it really runs on the ui thread
+    private fun runAndWait(r: Runnable) {
+        if (ShellUtils.onMainThread()) {
+            r.run()
+        } else {
+            val wr = WaitRunnable(r)
+            runMainLooperPost(wr)
+            wr.waitUntilDone()
+        }
     }
 
     @JavascriptInterface
@@ -144,7 +153,7 @@ class KernelSUInterface(
 
         val shell = createRootShell(
             globalMnt = true,
-            debug = debug
+            debug = this@KernelSUInterface.options.debug
         )
 
         val emitData = fun(name: String, data: String) {
@@ -158,42 +167,44 @@ class KernelSUInterface(
             runJs(jsCode)
         }
 
-        val stdout = object : CallbackList<String>(UiThreadHandler::runAndWait) {
+        val stdout = object : CallbackList<String>(::runAndWait) {
             override fun onAddElement(s: String) {
                 emitData("stdout", s)
             }
         }
 
-        val stderr = object : CallbackList<String>(UiThreadHandler::runAndWait) {
+        val stderr = object : CallbackList<String>(::runAndWait) {
             override fun onAddElement(s: String) {
                 emitData("stderr", s)
             }
         }
 
-        val future = shell.newJob().add(finalCommand.toString()).to(stdout, stderr).enqueue()
-        val completableFuture = CompletableFuture.supplyAsync {
-            future.get()
-        }
-
-        completableFuture.thenAccept { result ->
-            val emitExitCode =
-                "(function() { try { ${callbackFunc}.emit('exit', ${result.code}); } catch(e) { console.error(`emitExit error: \${e}`); } })();"
-            runJs(emitExitCode)
-
-
-            if (result.code != 0) {
-                val emitErrCode =
-                    "(function() { try { var err = new Error(); err.exitCode = ${result.code}; err.message = ${
-                        JSONObject.quote(
-                            result.err.joinToString(
-                                "\n"
-                            )
-                        )
-                    };${callbackFunc}.emit('error', err); } catch(e) { console.error('emitErr', e); } })();"
-                runJs(emitErrCode)
+        scope.launch(Dispatchers.IO) {
+            val future = shell.newJob().add(finalCommand.toString()).to(stdout, stderr).enqueue()
+            val completableFuture = CompletableFuture.supplyAsync {
+                future.get()
             }
-        }.whenComplete { _, _ ->
-            runJsCatching { shell.close() }
+
+            completableFuture.thenAccept { result ->
+                val emitExitCode =
+                    "(function() { try { ${callbackFunc}.emit('exit', ${result.code}); } catch(e) { console.error(`emitExit error: \${e}`); } })();"
+                runJs(emitExitCode)
+
+
+                if (result.code != 0) {
+                    val emitErrCode =
+                        "(function() { try { var err = new Error(); err.exitCode = ${result.code}; err.message = ${
+                            JSONObject.quote(
+                                result.err.joinToString(
+                                    "\n"
+                                )
+                            )
+                        };${callbackFunc}.emit('error', err); } catch(e) { console.error('emitErr', e); } })();"
+                    runJs(emitErrCode)
+                }
+            }.whenComplete { _, _ ->
+                runJsCatching { shell.close() }
+            }
         }
     }
 }

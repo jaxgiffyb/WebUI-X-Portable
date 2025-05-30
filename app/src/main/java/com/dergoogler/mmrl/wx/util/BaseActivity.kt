@@ -31,7 +31,7 @@ open class BaseActivity : ComponentActivity() {
         enableEdgeToEdge()
     }
 
-    inline fun <reified A : BaseActivity> setActivityEnabled(enable: Boolean) {
+    inline fun <reified A : ComponentActivity> setActivityEnabled(enable: Boolean) {
         val component = ComponentName(
             this, A::class.java
         )
