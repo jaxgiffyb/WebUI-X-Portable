@@ -39,6 +39,8 @@ data class ModulesScreenState(
 class ModulesViewModel @Inject constructor(
     private val userPreferencesRepository: UserPreferencesRepository,
 ) : ViewModel() {
+    val isProviderAlive get() = Platform.isAlive
+
     private val cacheFlow = MutableStateFlow(listOf<LocalModule>())
     private val localFlow = MutableStateFlow(listOf<LocalModule>())
     val local get() = localFlow.asStateFlow()

@@ -6,9 +6,12 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredSize
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,6 +31,7 @@ import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.ui.component.card.Card
 import com.dergoogler.mmrl.ui.component.card.CardDefaults.cardStyle
 import com.dergoogler.mmrl.ext.nullable
+import com.dergoogler.mmrl.ext.nullply
 import com.dergoogler.mmrl.ext.takeTrue
 import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.platform.content.LocalModule
@@ -46,6 +50,8 @@ fun ModuleItem(
     alpha: Float = 1f,
     decoration: TextDecoration = TextDecoration.None,
     indicator: @Composable() (BoxScope.() -> Unit?)? = null,
+    leadingButton: @Composable() (RowScope.() -> Unit)? = null,
+    trailingButton: @Composable() (RowScope.() -> Unit)? = null,
 ) {
     val userPreferences = LocalUserPreferences.current
     val menu = userPreferences.modulesMenu
@@ -119,7 +125,7 @@ fun ModuleItem(
 
         Row(
             modifier = Modifier
-                .padding(16.dp)
+                .padding(horizontal = 16.dp, vertical = 8.dp)
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -138,6 +144,29 @@ fun ModuleItem(
                     contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                 )
             )
+        }
+
+        HorizontalDivider(
+            thickness = 1.5.dp,
+            color = MaterialTheme.colorScheme.surface,
+            modifier = Modifier.padding(top = 8.dp)
+        )
+
+        Row(
+            modifier = Modifier
+                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            leadingButton.nullply {
+                this()
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            trailingButton.nullply {
+                this()
+            }
         }
     }
 }
