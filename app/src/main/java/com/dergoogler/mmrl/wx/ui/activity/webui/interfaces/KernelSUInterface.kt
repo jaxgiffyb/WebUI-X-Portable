@@ -8,7 +8,6 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.dergoogler.mmrl.webui.interfaces.WXInterface
 import com.dergoogler.mmrl.webui.interfaces.WXOptions
-import com.dergoogler.mmrl.webui.model.JavaScriptInterface
 import com.dergoogler.mmrl.wx.util.createRootShell
 import com.dergoogler.mmrl.wx.util.withNewRootShell
 import com.topjohnwu.superuser.CallbackList
@@ -28,6 +27,8 @@ class KernelSUInterface(
 
     // Defined a logging tag for debugging
     override var tag: String = "KernelSUInterface"
+
+    private val commands = if (options.platform.isNonRoot) arrayOf("sh") else arrayOf("su")
 
     @JavascriptInterface
     fun mmrl(): Boolean {
@@ -65,7 +66,8 @@ class KernelSUInterface(
     fun exec(cmd: String): String {
         return withNewRootShell(
             globalMnt = true,
-            debug = options.debug
+            debug = options.debug,
+            commands = commands
         ) { ShellUtils.fastCmd(this, cmd) }
     }
 
@@ -104,7 +106,8 @@ class KernelSUInterface(
         scope.launch(Dispatchers.IO) {
             val result = withNewRootShell(
                 globalMnt = true,
-                debug = this@KernelSUInterface.options.debug
+                debug = this@KernelSUInterface.options.debug,
+                commands = commands
             ) {
                 newJob().add(finalCommand.toString()).to(ArrayList(), ArrayList()).exec()
             }
@@ -153,7 +156,8 @@ class KernelSUInterface(
 
         val shell = createRootShell(
             globalMnt = true,
-            debug = this@KernelSUInterface.options.debug
+            debug = this@KernelSUInterface.options.debug,
+            commands = commands
         )
 
         val emitData = fun(name: String, data: String) {
