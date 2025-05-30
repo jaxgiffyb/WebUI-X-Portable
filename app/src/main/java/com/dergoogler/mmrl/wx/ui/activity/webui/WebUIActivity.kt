@@ -5,9 +5,11 @@ import android.os.Build
 import androidx.lifecycle.lifecycleScope
 import com.dergoogler.mmrl.datastore.repository.UserPreferencesRepository
 import com.dergoogler.mmrl.ext.managerVersion
-import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.wx.ui.activity.webui.interfaces.KernelSUInterface
 import com.dergoogler.mmrl.ext.exception.BrickException
+import com.dergoogler.mmrl.platform.PlatformManager
+import com.dergoogler.mmrl.ui.component.dialog.ConfirmData
+import com.dergoogler.mmrl.ui.component.dialog.confirm
 import com.dergoogler.mmrl.webui.activity.WXActivity
 import com.dergoogler.mmrl.webui.util.WebUIOptions
 import com.dergoogler.mmrl.webui.view.WebUIXView
@@ -30,11 +32,9 @@ class WebUIActivity : WXActivity() {
         get(): String {
             val mmrlVersion = this.managerVersion.second
 
-            val platform = Platform.get("Unknown") {
-                platform.name
-            }
+            val platform = PlatformManager.platform.name
 
-            val platformVersion = Platform.get(-1) {
+            val platformVersion = PlatformManager.get(-1) {
                 moduleManager.versionCode
             }
 
@@ -82,13 +82,25 @@ class WebUIActivity : WXActivity() {
         setContentView(loading)
 
         lifecycleScope.launch {
-            initPlatform(userPrefs.workingMode.toPlatform())
+            val active = initPlatform(this, this@WebUIActivity, userPrefs.workingMode.toPlatform())
 
-            val deferred = Platform.getAsyncDeferred(this, null) {
-                view
+            if (!active.await()) {
+                confirm(
+                    ConfirmData(
+                        title = "Failed!",
+                        description = "Failed to initialize platform. Please try again.",
+                        confirmText = "Close",
+                        onConfirm = {
+                            finish()
+                        },
+                    ),
+                    colorScheme = options.colorScheme
+                )
+
+                return@launch
             }
 
-            setContentView(deferred.await())
+            setContentView(view)
         }
     }
 }

@@ -1,14 +1,18 @@
 package com.dergoogler.mmrl.wx.util
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.runtime.Composable
 import com.dergoogler.mmrl.datastore.model.WorkingMode
 import com.dergoogler.mmrl.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.ext.exception.BrickException
 import com.dergoogler.mmrl.ext.toFormattedDateSafely
 import com.dergoogler.mmrl.platform.Platform
+import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.content.LocalModule
+import com.dergoogler.mmrl.platform.stub.IServiceManager
 import com.topjohnwu.superuser.Shell
+import kotlinx.coroutines.CoroutineScope
 
 val LocalModule.versionDisplay
     get(): String {
@@ -68,9 +72,39 @@ fun createRootShell(
     return builder.build(*commands)
 }
 
-suspend fun Context.initPlatform(platform: Platform) = Platform.init {
-    this.context = this@initPlatform
-    this.platform = platform
-    this.rootProvider = from(RootProvider(this@initPlatform, platform))
-    this.nonRootProvider = from(NonRootProvider(this@initPlatform, platform))
+private suspend fun init(
+    platform: Platform,
+    context: Context,
+    self: PlatformManager,
+): IServiceManager? {
+    if (platform.isNonRoot) {
+        return self.from(
+            NonRootProvider(
+                context,
+                platform,
+            )
+        )
+    }
+
+    return self.from(
+        RootProvider(
+            context,
+            platform,
+        )
+    )
+}
+
+suspend fun initPlatform(
+    context: Context,
+    platform: Platform,
+) = PlatformManager.init {
+    init(platform, context, this)
+}
+
+suspend fun initPlatform(
+    scope: CoroutineScope,
+    context: Context,
+    platform: Platform,
+) = PlatformManager.init(scope) {
+    init(platform, context, this)
 }

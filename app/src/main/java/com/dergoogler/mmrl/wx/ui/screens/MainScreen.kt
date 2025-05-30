@@ -1,5 +1,6 @@
 package com.dergoogler.mmrl.wx.ui.screens
 
+import android.util.Log
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -31,11 +32,15 @@ import com.dergoogler.mmrl.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.ext.navigatePopUpTo
 import com.dergoogler.mmrl.ext.none
 import com.dergoogler.mmrl.platform.Platform
+import com.dergoogler.mmrl.platform.PlatformManager
+import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.ui.providable.LocalNavController
 import com.dergoogler.mmrl.wx.ui.navigation.MainScreen
 import com.dergoogler.mmrl.wx.ui.navigation.graphs.modulesScreen
 import com.dergoogler.mmrl.wx.ui.navigation.graphs.settingsScreen
 import com.dergoogler.mmrl.wx.util.initPlatform
+import java.io.File
+import java.io.FileInputStream
 
 @Composable
 fun MainScreen() {
@@ -45,7 +50,7 @@ fun MainScreen() {
     val navController = LocalNavController.current
     val snackbarHostState = remember { SnackbarHostState() }
 
-    val isRoot = userPreferences.workingMode.isRoot && Platform.isAlive
+    val isRoot = userPreferences.workingMode.isRoot && PlatformManager.isAlive
 
     val mainScreens by remember(isRoot) {
         derivedStateOf {
@@ -57,7 +62,7 @@ fun MainScreen() {
     }
 
     LaunchedEffect(Unit) {
-        context.initPlatform(userPreferences.workingMode.toPlatform())
+        initPlatform(this, context, userPreferences.workingMode.toPlatform())
     }
 
     Scaffold(

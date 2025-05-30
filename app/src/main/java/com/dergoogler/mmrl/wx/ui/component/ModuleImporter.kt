@@ -2,6 +2,7 @@ package com.dergoogler.mmrl.wx.ui.component
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -16,6 +17,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import com.dergoogler.mmrl.ext.systemBarsPaddingEnd
+import com.dergoogler.mmrl.platform.PlatformManager
+import com.dergoogler.mmrl.platform.content.LocalModule
 import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.ui.component.dialog.ConfirmData
 import com.dergoogler.mmrl.ui.component.dialog.rememberConfirm
@@ -35,24 +38,12 @@ fun ModuleImporter() {
         rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
             if (uri == null) return@rememberLauncherForActivityResult
 
-            val success = importZipToModules(context, uri)
-
-            if (!success) {
-                confirm(
-                    ConfirmData(
-                        title = "Failed!",
-                        description = "Failed to import module.",
-                        onConfirm = {},
-                        onClose = {}
-                    )
-                )
-                return@rememberLauncherForActivityResult
-            }
+            val result = importZipToModules(context, uri)
 
             confirm(
                 ConfirmData(
-                    title = "Success!",
-                    description = "Module imported successfully.",
+                    title = result.title,
+                    description = result.message,
                     onConfirm = {},
                     onClose = {}
                 )
@@ -81,37 +72,93 @@ fun ModuleImporter() {
     }
 }
 
-fun importZipToModules(context: Context, zipUri: Uri): Boolean {
-    return try {
-        val zipFile = SuFile(context.cacheDir, "temp.zip")
+data class ResultData(
+    val title: String,
+    val message: String,
+)
+
+fun importZipToModules(context: Context, zipUri: Uri): ResultData {
+    val tempZipName = "temp_module_import_${System.currentTimeMillis()}.zip"
+    val zipFile = SuFile(context.cacheDir, tempZipName)
+
+    try {
         context.contentResolver.openInputStream(zipUri)?.use { input ->
             FileOutputStream(zipFile).use { output ->
                 input.copyTo(output)
             }
+        } ?: run {
+            return ResultData(
+                title = "Failed",
+                message = "Unable to open ZIP file from the provided URI. Check permissions or URI validity."
+            )
         }
 
-        val moduleProps = extractModuleProp(zipFile) ?: return false
-        val id = moduleProps["id"]?.takeIf { it.isNotBlank() } ?: return false
+        val newModule: LocalModule? = PlatformManager.moduleManager.getModuleInfo(zipFile.path)
+        if (newModule == null) {
+            return ResultData(
+                title = "Failed",
+                message = "Could not parse module information from the ZIP file. It might be corrupted or not a valid module."
+            )
+        }
+
+        val existingModule: LocalModule? = PlatformManager.moduleManager.getModuleById(newModule.id)
+        if (existingModule != null) {
+            return ResultData(
+                title = "Failed",
+                message = "A module with ID '${newModule.id}' already exists. Please remove the existing module first if you intend to replace it."
+            )
+        }
 
         val baseDir = context.getExternalFilesDir(null)
+        if (baseDir == null) {
+            return ResultData(
+                title = "Failed",
+                message = "Unable to access the external files directory. Storage may not be available or accessible."
+            )
+        }
 
-        if (baseDir == null) return false
+        val targetDir = SuFile(baseDir, "modules/${newModule.id}")
+        if (targetDir.exists()) {
+            if (!targetDir.deleteRecursively()) {
+                return ResultData(
+                    title = "Failed",
+                    message = "An old version of the module directory exists at '${targetDir.path}', but it could not be deleted."
+                )
+            }
+        }
 
-        val targetDir = SuFile(baseDir, "modules/$id")
-        if (targetDir.exists()) targetDir.deleteRecursively()
-        targetDir.mkdirs()
+        if (!targetDir.mkdirs()) {
+            if (!targetDir.exists() || !targetDir.isDirectory) {
+                return ResultData(
+                    title = "Failed",
+                    message = "Failed to create module directory at '${targetDir.path}'. Check storage permissions and available space."
+                )
+            }
+        }
 
         unzip(zipFile, targetDir)
 
-        zipFile.delete()
+        val successMessage = "Module '${newModule.name}' imported successfully."
+        Log.i("ModuleImport", successMessage) // Log success
+        return ResultData(
+            title = "Success",
+            message = successMessage
+        )
 
-        true
     } catch (e: Exception) {
-        e.printStackTrace()
-        false
+        Log.e("ModuleImport", "Failed to import module from URI: $zipUri", e)
+        return ResultData(
+            title = "Import Error",
+            message = "An unexpected error occurred during module import: ${e.localizedMessage ?: "Unknown error. Check logs for details."}"
+        )
+    } finally {
+        if (zipFile.exists()) {
+            if (!zipFile.delete()) {
+                Log.w("ModuleImport", "Failed to delete temporary ZIP file: ${zipFile.path}")
+            }
+        }
     }
 }
-
 
 fun unzip(zipFile: SuFile, targetDir: SuFile) {
     ZipInputStream(BufferedInputStream(FileInputStream(zipFile))).use { zis ->
@@ -127,22 +174,3 @@ fun unzip(zipFile: SuFile, targetDir: SuFile) {
         }
     }
 }
-
-fun extractModuleProp(zipFile: SuFile): Map<String, String>? {
-    ZipInputStream(BufferedInputStream(FileInputStream(zipFile))).use { zis ->
-        var entry: ZipEntry?
-        while (zis.nextEntry.also { entry = it } != null) {
-            if (entry?.name == "module.prop") {
-                val content = zis.bufferedReader().use { it.readText() }
-                return readProps(content)
-            }
-        }
-    }
-    return null
-}
-
-fun readProps(props: String) = props.lines()
-    .associate { line ->
-        val items = line.split("=", limit = 2).map { it.trim() }
-        if (items.size != 2) "" to "" else items[0] to items[1]
-    }

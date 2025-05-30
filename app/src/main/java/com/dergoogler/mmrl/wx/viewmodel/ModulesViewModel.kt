@@ -10,6 +10,7 @@ import com.dergoogler.mmrl.datastore.model.ModulesMenu
 import com.dergoogler.mmrl.datastore.model.Option
 import com.dergoogler.mmrl.datastore.repository.UserPreferencesRepository
 import com.dergoogler.mmrl.platform.Platform
+import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.content.LocalModule
 import com.dergoogler.mmrl.platform.content.LocalModule.Companion.hasAction
 import com.dergoogler.mmrl.platform.content.LocalModule.Companion.hasWebUI
@@ -39,10 +40,10 @@ data class ModulesScreenState(
 class ModulesViewModel @Inject constructor(
     private val userPreferencesRepository: UserPreferencesRepository,
 ) : ViewModel() {
-    val isProviderAlive get() = Platform.isAlive
+    val isProviderAlive get() = PlatformManager.isAlive
 
     val platform
-        get() = Platform.get(Platform.Unknown) {
+        get() = PlatformManager.get(Platform.Unknown) {
             platform
         }
 
@@ -66,7 +67,7 @@ class ModulesViewModel @Inject constructor(
     }
 
     private fun providerObserver() {
-        Platform.isAliveFlow
+        PlatformManager.isAliveFlow
             .onEach {
                 if (it) getLocalAll()
 
@@ -191,7 +192,7 @@ class ModulesViewModel @Inject constructor(
         refreshing {
             try {
                 val modules = withContext(Dispatchers.IO) {
-                    Platform.get(emptyList()) {
+                    PlatformManager.get(emptyList()) {
                         with(moduleManager) {
                             modules
                         }
@@ -206,7 +207,7 @@ class ModulesViewModel @Inject constructor(
     }
 
     private fun getLocalAllAsFlow(): StateFlow<List<LocalModule>> {
-        return MutableStateFlow(Platform.get(emptyList()) {
+        return MutableStateFlow(PlatformManager.get(emptyList()) {
             with(moduleManager) {
                 modules
             }

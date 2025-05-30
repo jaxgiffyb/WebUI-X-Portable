@@ -20,7 +20,7 @@
     <string name="settings_webui_remote_url_alert_desc">WebUI X will consistently use your provided address for all modules and bypasses all SSL errors. Note that a self-signed local web server is required to use this feature, which is intended for debugging purposes only, is not meant for everyday use, and is used at your own risk.</string>
     <string name="invalid_ip">This is not a valid local domain!</string>
     <string name="settings_security_inject_eruda">Inject Eruda</string>
-    <string name="non_root_note">WebUI X requires root access to function properly. If you\'re running it without root, it will not work—please don\'t report this as an issue.</string>
+    <string name="non_root_note">To access all features of WebUI X, a rooted Android device is required. WebUI X does not provide instructions for rooting and is not responsible for any damage that may occur during the rooting process or from the use of WebUI X itself.</string>
     <string name="select">Select</string>
     <string name="continue_with">Continue with %1$s</string>
     <string name="select_your_platform">Select your Platform</string>

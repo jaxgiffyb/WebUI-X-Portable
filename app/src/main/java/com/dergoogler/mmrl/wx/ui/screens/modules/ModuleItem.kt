@@ -1,5 +1,6 @@
 package com.dergoogler.mmrl.wx.ui.screens.modules
 
+import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -39,6 +40,7 @@ import com.dergoogler.mmrl.ext.nullable
 import com.dergoogler.mmrl.ext.nullply
 import com.dergoogler.mmrl.ext.takeTrue
 import com.dergoogler.mmrl.platform.Platform
+import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.content.LocalModule
 import com.dergoogler.mmrl.platform.content.LocalModule.Companion.config
 import com.dergoogler.mmrl.platform.content.LocalModule.Companion.hasWebUI
@@ -66,9 +68,18 @@ fun ModuleItem(
     val menu = userPreferences.modulesMenu
     val context = LocalContext.current
 
-    val canWenUIAccessed = Platform.isAlive && module.hasWebUI && module.state != State.REMOVE
-    val clicker: (() -> Unit)? = canWenUIAccessed nullable {
-        context.launchWebUIX<WebUIActivity>(module.id)
+    val canWenUIAccessed =
+        PlatformManager.isAlive && module.hasWebUI && module.state != State.REMOVE
+
+    val clicker: (() -> Unit)? = canWenUIAccessed nullable jump@{
+        val baseDir = context.getExternalFilesDir(null)
+
+        if (baseDir == null) {
+            Toast.makeText(context, "Failed to get base directory", Toast.LENGTH_SHORT).show()
+            return@jump
+        }
+
+        context.launchWebUIX<WebUIActivity>(module.id, baseDir.path)
     }
 
     val config = remember(module) {

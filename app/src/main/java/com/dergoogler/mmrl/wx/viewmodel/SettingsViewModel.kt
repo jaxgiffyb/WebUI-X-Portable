@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.dergoogler.mmrl.datastore.model.DarkMode
 import com.dergoogler.mmrl.datastore.model.Homepage
 import com.dergoogler.mmrl.datastore.model.WorkingMode
-import com.dergoogler.mmrl.platform.Platform
+import com.dergoogler.mmrl.platform.PlatformManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -21,22 +21,14 @@ class SettingsViewModel @Inject constructor(
     private val userPreferencesRepository: UserPreferencesRepository,
 ) : ViewModel() {
     val version
-        get() = Platform.get("") {
+        get() = PlatformManager.get("") {
             with(moduleManager) { "$version (${versionCode})" }
         }
 
     val versionCode
-        get() = Platform.get(-1) {
+        get() = PlatformManager.get(-1) {
             with(moduleManager) { versionCode }
         }
-
-    val isSuEnabled = Platform.get(true) {
-        with(moduleManager) { isSuEnabled }
-    }
-
-    fun setSuEnabled(value: Boolean) = Platform.get(true) {
-        with(moduleManager) { setSuEnabled(value) }
-    }
 
     fun setWorkingMode(value: WorkingMode) {
         viewModelScope.launch {

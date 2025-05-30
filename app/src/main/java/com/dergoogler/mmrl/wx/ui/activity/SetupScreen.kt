@@ -34,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dergoogler.mmrl.datastore.model.WorkingMode
+import com.dergoogler.mmrl.ext.nullable
 import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.ui.component.card.Card
 import com.dergoogler.mmrl.ui.component.listItem.ListItem
@@ -75,7 +76,6 @@ fun SetupScreen(setWorkingMode: (WorkingMode) -> Unit) {
 
                 LazyColumn(
                     modifier = Modifier
-                        .height(300.dp)
                         .fillMaxWidth(),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
@@ -126,7 +126,7 @@ fun SetupScreen(setWorkingMode: (WorkingMode) -> Unit) {
                 ) {
                     Button(
                         enabled = currentSelection != null
-                                && currentSelection!!.platform != Platform.NonRoot,
+                                && currentSelection!!.platform != Platform.Unknown,
                         onClick = {
                             setWorkingMode(currentSelection!!.platform.toWorkingMode())
                         },
@@ -136,15 +136,14 @@ fun SetupScreen(setWorkingMode: (WorkingMode) -> Unit) {
                             .absolutePadding(bottom = 5.dp),
                     ) {
                         Text(
-                            text =
-                                if (currentSelection != null) {
-                                    stringResource(
-                                        R.string.continue_with,
-                                        currentSelection!!.name
-                                    )
-                                } else {
-                                    stringResource(R.string.select)
-                                }
+                            text = currentSelection.nullable(default = {
+                                stringResource(R.string.select)
+                            }) {
+                                stringResource(
+                                    R.string.continue_with,
+                                    stringResource(currentSelection!!.name)
+                                )
+                            }
                         )
                     }
 
