@@ -48,4 +48,5 @@
     <string name="settings_security_inject_eruda_desc">Injecting Eruda cannot be used with WebUI Remote URL</string>
     <string name="add_shortcut">Add Shortcut</string>
     <string name="remove_shortcut">Remove Shortcut</string>
+    <string name="non_root">Non-Root</string>
 </resources>

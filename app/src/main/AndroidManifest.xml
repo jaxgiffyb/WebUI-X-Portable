@@ -31,7 +31,6 @@
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -39,10 +38,18 @@
         <activity
             android:name=".ui.activity.webui.WebUIActivity"
             android:autoRemoveFromRecents="true"
-            android:documentLaunchMode="always"
+            android:documentLaunchMode="intoExisting"
             android:exported="false"
             android:taskAffinity="${applicationId}.WEBUI" />
 
+        <service
+            android:name=".util.NonRootService"
+            android:enabled="true"
+            android:exported="true"
+            android:permission="android.permission.BIND_AUTO_CREATE">
+            <intent-filter>
+                <action android:name="NonRootService" />
+            </intent-filter>
+        </service>
     </application>
-
 </manifest>

@@ -28,11 +28,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dergoogler.mmrl.datastore.model.ModulesMenu
 import com.dergoogler.mmrl.ext.none
+import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.ui.component.Loading
 import com.dergoogler.mmrl.ui.component.PageIndicator
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.ui.component.SearchTopBar
 import com.dergoogler.mmrl.ui.component.text.TextRow
+import com.dergoogler.mmrl.wx.ui.component.ModuleImporter
 import com.dergoogler.mmrl.wx.viewmodel.ModulesViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,6 +60,11 @@ fun ModulesScreen(
                 setMenu = viewModel::setModulesMenu,
                 scrollBehavior = scrollBehavior
             )
+        },
+        floatingActionButton = {
+            if (viewModel.platform != Platform.NonRoot) return@Scaffold
+
+            ModuleImporter()
         },
         contentWindowInsets = WindowInsets.none
     ) { innerPadding ->

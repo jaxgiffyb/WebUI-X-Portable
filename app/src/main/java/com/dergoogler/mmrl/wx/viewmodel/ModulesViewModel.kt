@@ -41,6 +41,11 @@ class ModulesViewModel @Inject constructor(
 ) : ViewModel() {
     val isProviderAlive get() = Platform.isAlive
 
+    val platform
+        get() = Platform.get(Platform.Unknown) {
+            platform
+        }
+
     private val cacheFlow = MutableStateFlow(listOf<LocalModule>())
     private val localFlow = MutableStateFlow(listOf<LocalModule>())
     val local get() = localFlow.asStateFlow()

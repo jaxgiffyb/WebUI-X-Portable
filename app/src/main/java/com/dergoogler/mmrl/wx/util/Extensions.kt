@@ -1,5 +1,6 @@
 package com.dergoogler.mmrl.wx.util
 
+import android.content.Context
 import androidx.compose.runtime.Composable
 import com.dergoogler.mmrl.datastore.model.WorkingMode
 import com.dergoogler.mmrl.datastore.providable.LocalUserPreferences
@@ -40,6 +41,7 @@ fun Platform.toWorkingMode() = when (this) {
     Platform.KernelSU -> WorkingMode.MODE_KERNEL_SU
     Platform.KsuNext -> WorkingMode.MODE_KERNEL_SU_NEXT
     Platform.APatch -> WorkingMode.MODE_APATCH
+    Platform.NonRoot -> WorkingMode.MODE_NON_ROOT
     else -> throw BrickException("Unsupported Platform")
 }
 
@@ -64,4 +66,11 @@ fun createRootShell(
         builder.setFlags(Shell.FLAG_MOUNT_MASTER)
     }
     return builder.build(*commands)
+}
+
+suspend fun Context.initPlatform(platform: Platform) = Platform.init {
+    this.context = this@initPlatform
+    this.platform = platform
+    this.rootProvider = from(RootProvider(this@initPlatform, platform))
+    this.nonRootProvider = from(NonRootProvider(this@initPlatform, platform))
 }

@@ -4,17 +4,17 @@ import android.content.Context
 import android.content.ServiceConnection
 import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.platform.model.IProvider
-import com.dergoogler.mmrl.platform.model.PlatformIntent
+import com.dergoogler.mmrl.platform.model.createPlatformIntent
 import com.topjohnwu.superuser.Shell
 import com.topjohnwu.superuser.ipc.RootService
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
-class LibSuProvider(
+class RootProvider(
     private val context: Context,
     private val platform: Platform,
 ) : IProvider {
-    override val name = "LibSu"
+    override val name = "RootProvider"
 
     override fun isAvailable() = true
 
@@ -30,24 +30,15 @@ class LibSuProvider(
         }
     }
 
-    private val serviceIntent
-        get() = PlatformIntent(
-            context,
-            platform,
-            SuService::class.java
-        )
+    private val intent by lazy {
+        context.createPlatformIntent<SuService>(platform)
+    }
 
     override fun bind(connection: ServiceConnection) {
-        RootService.bind(serviceIntent.intent, connection)
+        RootService.bind(intent, connection)
     }
 
     override fun unbind(connection: ServiceConnection) {
-        RootService.stop(serviceIntent.intent)
+        RootService.stop(intent)
     }
-}
-
-suspend fun Context.initPlatform(platform: Platform) = Platform.init {
-    this.context = this@initPlatform
-    this.platform = platform
-    this.provider = from(LibSuProvider(this@initPlatform, platform))
 }

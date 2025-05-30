@@ -1,6 +1,7 @@
 package com.dergoogler.mmrl.wx.ui.activity
 
 import android.os.Bundle
+import android.util.Log
 import androidx.compose.animation.Crossfade
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.compose.runtime.LaunchedEffect
@@ -13,6 +14,7 @@ import androidx.lifecycle.lifecycleScope
 import com.dergoogler.mmrl.datastore.model.WorkingMode
 import com.dergoogler.mmrl.datastore.model.WorkingMode.Companion.isRoot
 import com.dergoogler.mmrl.datastore.model.WorkingMode.Companion.isSetup
+import com.dergoogler.mmrl.platform.file.ExtFile
 import com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity
 import com.dergoogler.mmrl.wx.ui.screens.MainScreen
 import com.dergoogler.mmrl.wx.util.BaseActivity
@@ -20,6 +22,7 @@ import com.dergoogler.mmrl.wx.util.initPlatform
 import com.dergoogler.mmrl.wx.util.setBaseContent
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import java.io.File
 
 @AndroidEntryPoint
 class MainActivity : BaseActivity() {
@@ -42,10 +45,6 @@ class MainActivity : BaseActivity() {
             } else {
                 isLoading = false
                 checkNotNull(userPreferences)
-            }
-
-            LaunchedEffect(userPreferences) {
-                setActivityEnabled<WebUIActivity>(preferences.workingMode.isRoot)
             }
 
             Crossfade(

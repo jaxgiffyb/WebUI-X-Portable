@@ -11,7 +11,7 @@ import com.dergoogler.mmrl.wx.R
 data class FeaturedManager(
     @StringRes val name: Int,
     @DrawableRes val icon: Int,
-    val platform: Platform
+    val platform: Platform,
 ) {
     @Composable
     fun toRadioOption() = RadioOptionItem(
@@ -43,5 +43,11 @@ val managers = listOf(
         name = R.string.apatch,
         icon = com.dergoogler.mmrl.ui.R.drawable.brand_android,
         platform = Platform.APatch
+    ),
+
+    FeaturedManager(
+        name = R.string.non_root,
+        icon = R.drawable.shield_lock,
+        platform = Platform.NonRoot
     ),
 )

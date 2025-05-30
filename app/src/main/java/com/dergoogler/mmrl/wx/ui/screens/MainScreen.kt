@@ -32,7 +32,6 @@ import com.dergoogler.mmrl.ext.navigatePopUpTo
 import com.dergoogler.mmrl.ext.none
 import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.ui.providable.LocalNavController
-import com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity
 import com.dergoogler.mmrl.wx.ui.navigation.MainScreen
 import com.dergoogler.mmrl.wx.ui.navigation.graphs.modulesScreen
 import com.dergoogler.mmrl.wx.ui.navigation.graphs.settingsScreen

@@ -12,6 +12,7 @@ import com.dergoogler.mmrl.webui.activity.WXActivity
 import com.dergoogler.mmrl.webui.util.WebUIOptions
 import com.dergoogler.mmrl.webui.view.WebUIXView
 import com.dergoogler.mmrl.wx.BuildConfig
+import com.dergoogler.mmrl.wx.util.initPlatform
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -81,6 +82,8 @@ class WebUIActivity : WXActivity() {
         setContentView(loading)
 
         lifecycleScope.launch {
+            initPlatform(userPrefs.workingMode.toPlatform())
+
             val deferred = Platform.getAsyncDeferred(this, null) {
                 view
             }
