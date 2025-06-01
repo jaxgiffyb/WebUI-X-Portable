@@ -63,7 +63,8 @@ private fun MenuBottomSheet(
 ) = BottomSheet(onDismissRequest = onClose) {
     val options = listOf(
         Option.Name to R.string.menu_sort_option_name,
-        Option.UpdatedTime to R.string.menu_sort_option_updated
+        Option.UpdatedTime to R.string.menu_sort_option_updated,
+        Option.Size to R.string.menu_sort_option_size,
     )
 
     Text(

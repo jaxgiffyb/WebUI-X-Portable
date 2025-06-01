@@ -1,7 +1,11 @@
 package com.dergoogler.mmrl.wx.util
 
 import android.content.Context
+import android.content.Intent
+import android.widget.Toast
 import androidx.compose.runtime.Composable
+import com.dergoogler.mmrl.datastore.model.UserPreferences
+import com.dergoogler.mmrl.datastore.model.WebUIEngine
 import com.dergoogler.mmrl.datastore.model.WorkingMode
 import com.dergoogler.mmrl.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.ext.exception.BrickException
@@ -9,7 +13,14 @@ import com.dergoogler.mmrl.ext.toFormattedDateSafely
 import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.content.LocalModule
+import com.dergoogler.mmrl.platform.model.ModId
+import com.dergoogler.mmrl.platform.model.ModId.Companion.putBaseDir
+import com.dergoogler.mmrl.platform.model.ModuleConfig.Companion.asModuleConfig
 import com.dergoogler.mmrl.platform.stub.IServiceManager
+import com.dergoogler.mmrl.webui.activity.WXActivity.Companion.launchWebUI
+import com.dergoogler.mmrl.webui.activity.WXActivity.Companion.launchWebUIX
+import com.dergoogler.mmrl.wx.ui.activity.webui.KsuWebUIActivity
+import com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity
 import com.topjohnwu.superuser.Shell
 import kotlinx.coroutines.CoroutineScope
 import java.io.BufferedInputStream
@@ -20,7 +31,7 @@ import java.util.zip.ZipInputStream
 
 fun Context.extractZipFromAssets(
     assetName: String,
-    outputDir: File
+    outputDir: File,
 ) {
     if (!outputDir.exists()) {
         outputDir.mkdirs()
@@ -146,4 +157,54 @@ suspend fun initPlatform(
     platform: Platform,
 ) = PlatformManager.init(scope) {
     init(platform, context, this)
+}
+
+fun UserPreferences.launchWebUI(context: Context, modId: ModId) {
+    val config = modId.asModuleConfig
+
+    val baseDir = if (PlatformManager.platform.isNonRoot) {
+        context.getExternalFilesDir(null)?.path
+    } else {
+        ModId.ADB_DIR
+    }
+
+    if (baseDir == null) {
+        Toast.makeText(context, "Failed to get base directory", Toast.LENGTH_SHORT).show()
+        return
+    }
+
+    val applyIntent: Intent.() -> Unit = {
+        putBaseDir(baseDir)
+    }
+
+    if (webuiEngine == WebUIEngine.PREFER_MODULE) {
+        val configEngine = config.getWebuiEngine(context)
+
+        if (configEngine == null) {
+            context.launchWebUIX<WebUIActivity>(modId)
+            return
+        }
+
+        when (configEngine) {
+            "wx" -> context.launchWebUIX<WebUIActivity>(modId, baseDir)
+            "ksu" -> context.launchWebUI<KsuWebUIActivity>(modId.id, applyIntent)
+            else -> Toast.makeText(context, "Unknown WebUI engine", Toast.LENGTH_SHORT).show()
+        }
+
+        return
+    }
+
+
+    if (webuiEngine == WebUIEngine.WX) {
+        context.launchWebUIX<WebUIActivity>(modId, baseDir)
+        return
+
+    }
+
+    if (webuiEngine == WebUIEngine.KSU) {
+        context.launchWebUI<KsuWebUIActivity>(modId.id, applyIntent)
+        return
+    }
+
+    Toast.makeText(context, "Unknown WebUI engine", Toast.LENGTH_SHORT).show()
 }

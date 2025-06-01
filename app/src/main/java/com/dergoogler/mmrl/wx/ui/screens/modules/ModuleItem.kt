@@ -52,6 +52,7 @@ import com.dergoogler.mmrl.ui.component.LabelItemDefaults
 import com.dergoogler.mmrl.ui.component.LocalCover
 import com.dergoogler.mmrl.webui.activity.WXActivity.Companion.launchWebUIX
 import com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity
+import com.dergoogler.mmrl.wx.util.launchWebUI
 import com.dergoogler.mmrl.wx.util.toFormattedDateSafely
 import com.dergoogler.mmrl.wx.util.versionDisplay
 
@@ -72,14 +73,7 @@ fun ModuleItem(
         PlatformManager.isAlive && module.hasWebUI && module.state != State.REMOVE
 
     val clicker: (() -> Unit)? = canWenUIAccessed nullable jump@{
-        val baseDir = context.getExternalFilesDir(null)
-
-        if (baseDir == null) {
-            Toast.makeText(context, "Failed to get base directory", Toast.LENGTH_SHORT).show()
-            return@jump
-        }
-
-        context.launchWebUIX<WebUIActivity>(module.id, baseDir.path)
+        userPreferences.launchWebUI(context, module.id)
     }
 
     val config = remember(module) {

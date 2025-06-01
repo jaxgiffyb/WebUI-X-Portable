@@ -2,7 +2,7 @@ package com.dergoogler.mmrl.wx.viewmodel
 
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.lifecycle.ViewModel
-import com.dergoogler.mmrl.datastore.repository.UserPreferencesRepository
+import com.dergoogler.mmrl.datastore.UserPreferencesRepository
 import androidx.lifecycle.viewModelScope
 import com.dergoogler.mmrl.datastore.model.DarkMode
 import com.dergoogler.mmrl.datastore.model.Homepage
@@ -219,7 +219,7 @@ class SettingsViewModel @Inject constructor(
 
     fun setWebUIEngine(value: WebUIEngine) {
         viewModelScope.launch {
-            //  userPreferencesRepository.setWebUIEngine(value)
+            userPreferencesRepository.setWebUIEngine(value)
         }
     }
 }

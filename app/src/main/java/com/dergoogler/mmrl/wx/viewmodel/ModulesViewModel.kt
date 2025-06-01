@@ -8,7 +8,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dergoogler.mmrl.datastore.model.ModulesMenu
 import com.dergoogler.mmrl.datastore.model.Option
-import com.dergoogler.mmrl.datastore.repository.UserPreferencesRepository
+import com.dergoogler.mmrl.datastore.UserPreferencesRepository
 import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.content.LocalModule
@@ -164,12 +164,14 @@ class ModulesViewModel @Inject constructor(
         when (option) {
             Option.Name -> compareByDescending { it.name.lowercase() }
             Option.UpdatedTime -> compareBy { it.lastUpdated }
+            Option.Size -> compareBy { it.size }
         }
 
     } else {
         when (option) {
             Option.Name -> compareBy { it.name.lowercase() }
             Option.UpdatedTime -> compareByDescending { it.lastUpdated }
+            Option.Size -> compareByDescending { it.size }
         }
     }
 
