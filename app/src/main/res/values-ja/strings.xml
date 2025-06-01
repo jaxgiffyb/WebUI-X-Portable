@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="app_name">WebUI X</string>
   <string name="missing_mod_id">モジュール ID がありません</string>
@@ -50,4 +50,10 @@
   <string name="add_shortcut">ショートカットを作成</string>
   <string name="remove_shortcut">ショートカットを削除</string>
   <string name="non_root">Non-Root</string>
+  <string name="settings_webui_engine">WebUI エンジン</string>
+  <string name="settings_webui_engine_desc">お好みのエンジンを選択してください。</string>
+  <string name="settings_webui_engine_wx">WebUI X</string>
+  <string name="settings_webui_engine_ksu">KSU WebUI</string>
+  <string name="settings_webui_engine_prefer_module">モジュールの定義によって構成</string>
+  <string name="menu_sort_option_size">サイズ</string>
 </resources>
