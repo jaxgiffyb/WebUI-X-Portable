@@ -16,19 +16,9 @@ import com.dergoogler.mmrl.platform.content.LocalModule.Companion.hasAction
 import com.dergoogler.mmrl.platform.content.LocalModule.Companion.hasWebUI
 import com.dergoogler.mmrl.platform.content.State
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 data class ModulesScreenState(
@@ -40,6 +30,7 @@ data class ModulesScreenState(
 class ModulesViewModel @Inject constructor(
     private val userPreferencesRepository: UserPreferencesRepository,
 ) : ViewModel() {
+
     val isProviderAlive get() = PlatformManager.isAlive
 
     val platform
@@ -52,11 +43,11 @@ class ModulesViewModel @Inject constructor(
     val local get() = localFlow.asStateFlow()
 
     private val modulesMenu
-        get() = userPreferencesRepository.data
-            .map { it.modulesMenu }
+        get() = userPreferencesRepository.data.map { it.modulesMenu }
 
     var isSearch by mutableStateOf(false)
         private set
+
     private val keyFlow = MutableStateFlow("")
     val query get() = keyFlow.asStateFlow()
 
@@ -67,52 +58,53 @@ class ModulesViewModel @Inject constructor(
     }
 
     private fun providerObserver() {
-        PlatformManager.isAliveFlow
-            .onEach {
-                if (it) getLocalAll()
+        viewModelScope.launch {
+            with(PlatformManager) {
+                if (platform.isNonRoot) {
+                    try {
+                        getLocalAll()
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Initial load failed", e)
+                    }
+                }
 
-            }.launchIn(viewModelScope)
+                isAliveFlow
+                    .onEach {
+                        if (it) getLocalAll()
+
+                    }.launchIn(viewModelScope)
+            }
+        }
     }
 
     private fun dataObserver() {
-        combine(
-            getLocalAllAsFlow(),
-            modulesMenu
-        ) { list, menu ->
-            if (list.isEmpty()) return@combine
+        getLocalAllAsFlow()
+            .combine(modulesMenu) { list, menu ->
+                if (list.isEmpty()) return@combine
 
-            cacheFlow.value = list.sortedWith(
-                comparator(menu.option, menu.descending)
-            ).let { v ->
-                val a = if (menu.pinEnabled) {
-                    v.sortedByDescending { it.state == State.ENABLE }
-                } else {
-                    v
+                cacheFlow.value = list.sortedWith(
+                    comparator(menu.option, menu.descending)
+                ).let { v ->
+                    val a = if (menu.pinEnabled) {
+                        v.sortedByDescending { it.state == State.ENABLE }
+                    } else v
+
+                    val b = if (menu.pinAction) {
+                        a.sortedByDescending { it.hasAction }
+                    } else a
+
+                    if (menu.pinWebUI) {
+                        b.sortedByDescending { it.hasWebUI }
+                    } else b
                 }
 
-                val b = if (menu.pinAction) {
-                    a.sortedByDescending { it.hasAction }
-                } else {
-                    a
-                }
-
-                if (menu.pinWebUI) {
-                    b.sortedByDescending { it.hasWebUI }
-                } else {
-                    b
-                }
+                isLoadingFlow.update { false }
             }
-
-            isLoadingFlow.update { false }
-
-        }.launchIn(viewModelScope)
+            .launchIn(viewModelScope)
     }
 
     private fun keyObserver() {
-        combine(
-            keyFlow,
-            cacheFlow
-        ) { key, source ->
+        keyFlow.combine(cacheFlow) { key, source ->
             val newKey = when {
                 key.startsWith("id:", ignoreCase = true) -> key.removePrefix("id:")
                 key.startsWith("name:", ignoreCase = true) -> key.removePrefix("name:")
@@ -157,23 +149,20 @@ class ModulesViewModel @Inject constructor(
         keyFlow.value = ""
     }
 
-    private fun comparator(
-        option: Option,
-        descending: Boolean,
-    ): Comparator<LocalModule> = if (descending) {
-        when (option) {
-            Option.Name -> compareByDescending { it.name.lowercase() }
-            Option.UpdatedTime -> compareBy { it.lastUpdated }
-            Option.Size -> compareBy { it.size }
+    private fun comparator(option: Option, descending: Boolean): Comparator<LocalModule> =
+        if (descending) {
+            when (option) {
+                Option.Name -> compareByDescending { it.name.lowercase() }
+                Option.UpdatedTime -> compareBy { it.lastUpdated }
+                Option.Size -> compareBy { it.size }
+            }
+        } else {
+            when (option) {
+                Option.Name -> compareBy { it.name.lowercase() }
+                Option.UpdatedTime -> compareByDescending { it.lastUpdated }
+                Option.Size -> compareByDescending { it.size }
+            }
         }
-
-    } else {
-        when (option) {
-            Option.Name -> compareBy { it.name.lowercase() }
-            Option.UpdatedTime -> compareByDescending { it.lastUpdated }
-            Option.Size -> compareByDescending { it.size }
-        }
-    }
 
     fun setModulesMenu(value: ModulesMenu) {
         viewModelScope.launch {
@@ -181,7 +170,7 @@ class ModulesViewModel @Inject constructor(
         }
     }
 
-    private var isLoadingFlow = MutableStateFlow(false)
+    private val isLoadingFlow = MutableStateFlow(false)
     val isLoading get() = isLoadingFlow.asStateFlow()
 
     private inline fun <T> T.refreshing(callback: T.() -> Unit) {
@@ -190,30 +179,46 @@ class ModulesViewModel @Inject constructor(
         isLoadingFlow.update { false }
     }
 
-    fun getLocalAll() = viewModelScope.launch {
+    private fun getDefaultList() = if (PlatformManager.platform.isNonRoot) {
+        PlatformManager.moduleManager.modules
+    } else {
+        emptyList()
+    }
+
+    fun getModules() = PlatformManager.getAsyncDeferred(
+        viewModelScope,
+        getDefaultList()
+    ) {
+        with(moduleManager) {
+            modules
+        }
+    }
+
+    fun getLocalAll(scope: CoroutineScope = viewModelScope) = scope.launch {
         refreshing {
             try {
-                val modules = withContext(Dispatchers.IO) {
-                    PlatformManager.get(emptyList()) {
-                        with(moduleManager) {
-                            modules
-                        }
-                    }
-                }
-                cacheFlow.value = modules
+                val modules = getModules()
+                cacheFlow.value = modules.await()
             } catch (e: Exception) {
-                // Log the error or handle failure
-                Log.e("ModulesViewModel", "Error fetching modules", e)
+                Log.e(TAG, "Error fetching modules", e)
             }
         }
     }
 
     private fun getLocalAllAsFlow(): StateFlow<List<LocalModule>> {
-        return MutableStateFlow(PlatformManager.get(emptyList()) {
-            with(moduleManager) {
-                modules
+        return flow {
+            try {
+                val modules = getModules()
+                emit(modules.await())
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to load modules", e)
+                emit(emptyList())
             }
-        }).stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+        }.stateIn(
+            viewModelScope,
+            SharingStarted.Eagerly,
+            emptyList()
+        )
     }
 
     val screenState: StateFlow<ModulesScreenState> = getLocalAllAsFlow()
@@ -226,4 +231,7 @@ class ModulesViewModel @Inject constructor(
             initialValue = ModulesScreenState()
         )
 
+    companion object {
+        private const val TAG = "ModulesViewModel"
+    }
 }

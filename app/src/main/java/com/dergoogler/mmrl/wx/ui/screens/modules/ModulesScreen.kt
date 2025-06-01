@@ -1,5 +1,6 @@
 package com.dergoogler.mmrl.wx.ui.screens.modules
 
+import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
@@ -16,6 +17,7 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.ExperimentalComposeApi
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,6 +31,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dergoogler.mmrl.datastore.model.ModulesMenu
 import com.dergoogler.mmrl.ext.none
 import com.dergoogler.mmrl.platform.Platform
+import com.dergoogler.mmrl.platform.util.waitOfPlatform
 import com.dergoogler.mmrl.ui.component.Loading
 import com.dergoogler.mmrl.ui.component.PageIndicator
 import com.dergoogler.mmrl.wx.R
@@ -37,7 +40,7 @@ import com.dergoogler.mmrl.ui.component.text.TextRow
 import com.dergoogler.mmrl.wx.ui.component.ModuleImporter
 import com.dergoogler.mmrl.wx.viewmodel.ModulesViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeApi::class)
 @Composable
 fun ModulesScreen(
     viewModel: ModulesViewModel = hiltViewModel(),
