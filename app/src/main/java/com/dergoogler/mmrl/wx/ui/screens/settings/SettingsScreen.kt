@@ -21,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
+import com.dergoogler.mmrl.datastore.model.WebUIEngine
 import com.dergoogler.mmrl.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.ext.isLocalWifiUrl
 import com.dergoogler.mmrl.ext.navigateSingleTopTo
@@ -28,10 +29,10 @@ import com.dergoogler.mmrl.ext.none
 import com.dergoogler.mmrl.ext.nullable
 import com.dergoogler.mmrl.ext.takeTrue
 import com.dergoogler.mmrl.ui.component.TopAppBar
-import com.dergoogler.mmrl.ui.component.TopAppBarTitle
+import com.dergoogler.mmrl.ui.component.toolbar.ToolbarTitle
+import com.dergoogler.mmrl.ui.component.dialog.RadioOptionItem
 import com.dergoogler.mmrl.ui.component.listItem.ListButtonItem
 import com.dergoogler.mmrl.ui.component.listItem.ListEditTextSwitchItem
-import com.dergoogler.mmrl.ui.component.listItem.ListHeader
 import com.dergoogler.mmrl.ui.component.listItem.ListRadioCheckItem
 import com.dergoogler.mmrl.ui.component.listItem.ListSwitchItem
 import com.dergoogler.mmrl.ui.providable.LocalNavController
@@ -55,7 +56,7 @@ fun SettingsScreen() {
         topBar = {
             TopAppBar(
                 title = {
-                    TopAppBarTitle(text = stringResource(id = R.string.settings))
+                    ToolbarTitle(title = stringResource(id = R.string.settings))
                 },
                 scrollBehavior = scrollBehavior
             )
@@ -93,9 +94,33 @@ fun SettingsScreen() {
                 )
             }
 
-            ListHeader(title = stringResource(id = R.string.webui))
+
+            ListRadioCheckItem(
+                icon = R.drawable.engine,
+                title = stringResource(R.string.settings_webui_engine),
+                desc = stringResource(R.string.settings_webui_engine_desc),
+                value = userPreferences.webuiEngine,
+                options = listOf(
+                    RadioOptionItem(
+                        value = WebUIEngine.WX,
+                        title = stringResource(R.string.settings_webui_engine_wx)
+                    ),
+                    RadioOptionItem(
+                        value = WebUIEngine.KSU,
+                        title = stringResource(R.string.settings_webui_engine_ksu)
+                    ),
+                    RadioOptionItem(
+                        value = WebUIEngine.PREFER_MODULE,
+                        title = stringResource(R.string.settings_webui_engine_prefer_module)
+                    )
+                ),
+                onConfirm = {
+                    viewModel.setWebUIEngine(it.value)
+                }
+            )
 
             ListSwitchItem(
+                icon = R.drawable.device_tablet_code,
                 title = stringResource(id = R.string.settings_developer_mode),
                 desc = stringResource(id = R.string.settings_developer_mode_desc),
                 checked = userPreferences.developerMode,
@@ -125,6 +150,7 @@ fun SettingsScreen() {
             )
 
             ListEditTextSwitchItem(
+                icon = R.drawable.forms,
                 enabled = userPreferences.developerMode,
                 title = stringResource(id = R.string.settings_webui_remote_url),
                 desc = stringResource(id = R.string.settings_webui_remote_url_desc),
@@ -154,6 +180,7 @@ fun SettingsScreen() {
             )
 
             ListSwitchItem(
+                icon = R.drawable.square_chevrons_left,
                 enabled = userPreferences.developerMode && !userPreferences.useWebUiDevUrl,
                 title = stringResource(R.string.settings_security_inject_eruda),
                 desc = stringResource(R.string.settings_security_inject_eruda_desc),

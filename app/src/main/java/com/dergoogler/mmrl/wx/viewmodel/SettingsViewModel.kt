@@ -6,6 +6,7 @@ import com.dergoogler.mmrl.datastore.repository.UserPreferencesRepository
 import androidx.lifecycle.viewModelScope
 import com.dergoogler.mmrl.datastore.model.DarkMode
 import com.dergoogler.mmrl.datastore.model.Homepage
+import com.dergoogler.mmrl.datastore.model.WebUIEngine
 import com.dergoogler.mmrl.datastore.model.WorkingMode
 import com.dergoogler.mmrl.platform.PlatformManager
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -213,6 +214,12 @@ class SettingsViewModel @Inject constructor(
     fun setEnableEruda(value: Boolean) {
         viewModelScope.launch {
             userPreferencesRepository.setEnableEruda(value)
+        }
+    }
+
+    fun setWebUIEngine(value: WebUIEngine) {
+        viewModelScope.launch {
+            //  userPreferencesRepository.setWebUIEngine(value)
         }
     }
 }
