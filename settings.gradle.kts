@@ -20,5 +20,8 @@ pluginManagement {
 }
 
 rootProject.name = "WebUIX"
-include(":app")
+include(
+    ":app",
+    ":webui"
+)
  

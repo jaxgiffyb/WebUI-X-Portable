@@ -158,15 +158,15 @@ android {
 }
 
 dependencies {
+    implementation(projects.webui)
     implementation(libs.mmrl.ext)
     implementation(libs.mmrl.ui)
-    implementation(libs.mmrl.webui)
     implementation(libs.mmrl.platform)
     implementation(libs.mmrl.datastore)
+    compileOnly(libs.mmrl.hiddenApi)
     implementation(libs.libsu.core)
     implementation(libs.libsu.service)
     implementation(libs.libsu.io)
-    compileOnly(libs.mmrl.hiddenApi)
 
     implementation(libs.androidx.lifecycle.process)
     implementation(libs.hiddenApiBypass)

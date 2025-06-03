@@ -4,6 +4,27 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <uses-permission
+        android:name="com.dergoogler.mmrl.permission.WEBUI_X"
+        android:protectionLevel="dangerous" />
+
+    <uses-permission
+        android:name="com.dergoogler.mmrl.permission.WEBUI_LEGACY"
+        android:protectionLevel="dangerous" />
+
+    <permission
+        android:name="com.dergoogler.mmrl.permission.WEBUI_X"
+        android:description="Allows other applications to use WebUI Legacy in WebUI X: Portable"
+        android:label="WebUI Legacy"
+        android:protectionLevel="dangerous" />
+
+    <permission
+        android:name="com.dergoogler.mmrl.permission.WEBUI_X"
+        android:description="Allows other applications to use WebUI X in WebUI X: Portable"
+        android:label="WebUI X"
+        android:protectionLevel="normal" />
+
+
     <permission
         android:name="${applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
         android:protectionLevel="signature"
@@ -40,6 +61,7 @@
             android:autoRemoveFromRecents="true"
             android:documentLaunchMode="intoExisting"
             android:exported="false"
+            android:permission="com.dergoogler.mmrl.permission.WEBUI_X"
             android:taskAffinity="${applicationId}.WEBUI_X" />
 
         <activity
@@ -47,6 +69,7 @@
             android:autoRemoveFromRecents="true"
             android:documentLaunchMode="intoExisting"
             android:exported="false"
+            android:permission="com.dergoogler.mmrl.permission.WEBUI_LEGACY"
             android:taskAffinity="${applicationId}.KSU_WEBUI" />
 
         <service
