@@ -55,4 +55,9 @@
     <string name="settings_webui_engine_ksu">KSU WebUI</string>
     <string name="settings_webui_engine_prefer_module">Defined by the Module Config</string>
     <string name="menu_sort_option_size">Size</string>
+    <string name="permission_wx_label">WebUI X</string>
+    <string name="permission_wx_desc">Allows other applications to use WebUI X in WebUI X: Portable</string>
+    <string name="permission_wl_label">WebUI Legacy</string>
+    <string name="permission_wl_desc">Allows other applications to use WebUI Legacy in WebUI X: Portable</string>
+
 </resources>

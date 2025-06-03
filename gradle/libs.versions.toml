@@ -58,7 +58,6 @@ runtimeAndroidVersion = "1.7.8"
 swiperefreshlayout = "1.1.0"
 
 [libraries]
-mmrl-webui = { group = "com.github.MMRLApp.MMRL", name = "webui", version.ref = "mmrl" }
 mmrl-platform = { group = "com.github.MMRLApp.MMRL", name = "platform", version.ref = "mmrl" }
 mmrl-hiddenApi = { group = "com.github.MMRLApp.MMRL", name = "hidden-api", version.ref = "mmrl" }
 mmrl-ui = { group = "com.github.MMRLApp.MMRL", name = "ui", version.ref = "mmrl" }
