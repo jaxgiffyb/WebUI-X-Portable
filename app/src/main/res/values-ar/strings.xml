@@ -1,0 +1,61 @@
+<resources>
+    <string name="app_name">WebUI X</string>
+    <string name="missing_mod_id">معرف الإضافة مفقود</string>
+    <string name="empty">فارغ</string>
+    <string name="author">%1$s المطور: %2$s</string>
+    <string name="update_at">اخر تحديث: %s</string>
+    <string name="modules">الإضافات</string>
+    <string name="settings">الإعدادات</string>
+    <string name="app_theme_palette">الثيمات</string>
+    <string name="app_theme_dark_theme">الأوضاع</string>
+    <string name="app_theme_dark_theme_auto">تلقائي</string>
+    <string name="app_theme_dark_theme_light">الوضع المضئ</string>
+    <string name="app_theme_dark_theme_dark">الوضع المظلم</string>
+    <string name="settings_app_theme">ثيم التطبيق</string>
+    <string name="settings_app_theme_desc">قم بتغيير لون وثيم التطبيق</string>
+    <string name="webui">واجهة الويب</string>
+    <string name="settings_developer_mode">وضع المطور</string>
+    <string name="settings_developer_mode_desc">يقوم بعرض معرف الإضافة والمزيد</string>  <string name="settings_webui_remote_url">رابط واجهة الويب</string>
+    <string name="settings_webui_remote_url_desc">لتسهيل عملية تصحيح الأخطاء. قم باضافة رابط مخصص (https://localhost). انقر على الملاحظة ادناه للمزيد من المعلومات</string>
+    <string name="settings_webui_remote_url_alert_desc">
+سيستخدم WebUI X العنوان الذي تقدمه باستمرار لجميع الوحدات ويتجاوز جميع أخطاء SSL. لاحظ أن هذه الميزة تتطلب خادم ويب محليًا بتوقيع ذاتي، وهي مخصصة لأغراض التصحيح فقط، وليست مخصصة للاستخدام اليومي، وتُستخدم على مسؤوليتك الخاصة.
+</string>
+<string name="invalid_ip">هذا ليس نطاقًا محليًا صالحًا!</string>
+<string name="settings_security_inject_eruda">حقن Eruda</string>
+<string name="non_root_note">
+للوصول إلى جميع ميزات WebUI X، يُطلب وجود جهاز Android بصلاحيات الروت. لا يوفر WebUI X تعليمات للروت ولا يتحمل أي مسؤولية عن أي ضرر قد يحدث أثناء عملية الروت أو نتيجة لاستخدام WebUI X نفسه.
+</string>
+<string name="select">اختيار</string>
+<string name="continue_with">المتابعة باستخدام %1$s</string>
+<string name="select_your_platform">اختر المنصة الخاصة بك</string>
+<string name="welcome">مرحبًا!</string>
+<string name="magisk">Magisk</string>
+<string name="kernelsu">KernelSU</string>
+<string name="kernelsu_next">KernelSU Next</string>
+<string name="apatch">APatch</string>
+<string name="platform">المنصة</string>
+<string name="mh_seems_like_root_isn_t_authorized">هممم... يبدو أن صلاحيات الروت غير مفعّلة</string>
+<string name="modules_empty">لا توجد وحدات</string>
+<string name="search_empty">القائمة فارغة</string>
+<string name="search_placeholder">بحث…</string>
+<string name="menu_advanced_menu">القائمة المتقدمة</string>
+<string name="menu_sort_mode">وضع الفرز</string>
+<string name="menu_sort_option_name">الاسم</string>
+<string name="menu_sort_option_updated">وقت التحديث</string>
+<string name="menu_descending">تنازلي</string>
+<string name="menu_pin_enabled">تثبيت مفعل</string>
+<string name="menu_pin_action">إجراء التثبيت</string>
+<string name="menu_pin_webui">تثبيت WebUI</string>
+<string name="menu_show_updated">عرض وقت التحديث</string>
+<string name="menu_show_antifeatures">عرض الخصائص السلبية</string>
+<string name="settings_security_inject_eruda_desc">لا يمكن استخدام حقن Eruda مع عنوان WebUI البعيد</string>
+<string name="add_shortcut">إضافة اختصار</string>
+<string name="remove_shortcut">إزالة الاختصار</string>
+<string name="non_root">بدون روت</string>
+<string name="settings_webui_engine">محرك WebUI</string>
+<string name="settings_webui_engine_desc">اختر المحرك المفضل لديك</string>
+<string name="settings_webui_engine_wx">WebUI X</string>
+<string name="settings_webui_engine_ksu">WebUI لـ KSU</string>
+<string name="settings_webui_engine_prefer_module">مُحدد من إعدادات الوحدة</string>
+<string name="menu_sort_option_size">الحجم</string>
+</resources>
