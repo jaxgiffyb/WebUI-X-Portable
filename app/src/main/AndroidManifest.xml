@@ -60,7 +60,7 @@
             android:name=".ui.activity.webui.WebUIActivity"
             android:autoRemoveFromRecents="true"
             android:documentLaunchMode="intoExisting"
-            android:exported="false"
+            android:exported="true"
             android:permission="com.dergoogler.mmrl.permission.WEBUI_X"
             android:taskAffinity="${applicationId}.WEBUI_X" />
 
@@ -68,7 +68,7 @@
             android:name=".ui.activity.webui.KsuWebUIActivity"
             android:autoRemoveFromRecents="true"
             android:documentLaunchMode="intoExisting"
-            android:exported="false"
+            android:exported="true"
             android:permission="com.dergoogler.mmrl.permission.WEBUI_LEGACY"
             android:taskAffinity="${applicationId}.KSU_WEBUI" />
 
