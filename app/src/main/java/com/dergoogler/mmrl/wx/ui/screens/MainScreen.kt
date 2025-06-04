@@ -35,12 +35,12 @@ import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.ui.providable.LocalNavController
+import com.dergoogler.mmrl.wx.App.Companion.TAG
+import com.dergoogler.mmrl.wx.service.PlatformService
 import com.dergoogler.mmrl.wx.ui.navigation.MainScreen
 import com.dergoogler.mmrl.wx.ui.navigation.graphs.modulesScreen
 import com.dergoogler.mmrl.wx.ui.navigation.graphs.settingsScreen
 import com.dergoogler.mmrl.wx.util.initPlatform
-import java.io.File
-import java.io.FileInputStream
 
 @Composable
 fun MainScreen() {
@@ -62,7 +62,16 @@ fun MainScreen() {
     }
 
     LaunchedEffect(Unit) {
-        initPlatform(this, context, userPreferences.workingMode.toPlatform())
+        val platform = userPreferences.workingMode.toPlatform()
+
+        if (!PlatformService.isActive) {
+            try {
+                PlatformService.start(context, platform)
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Log.e(TAG, "onCreate: $e")
+            }
+        }
     }
 
     Scaffold(

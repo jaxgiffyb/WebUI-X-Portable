@@ -15,6 +15,7 @@ import com.dergoogler.mmrl.platform.content.LocalModule
 import com.dergoogler.mmrl.platform.content.LocalModule.Companion.hasAction
 import com.dergoogler.mmrl.platform.content.LocalModule.Companion.hasWebUI
 import com.dergoogler.mmrl.platform.content.State
+import com.dergoogler.mmrl.wx.service.PlatformService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.*
@@ -58,6 +59,8 @@ class ModulesViewModel @Inject constructor(
     }
 
     private fun providerObserver() {
+        if (PlatformService.isActive) return
+
         viewModelScope.launch {
             with(PlatformManager) {
                 if (platform.isNonRoot) {

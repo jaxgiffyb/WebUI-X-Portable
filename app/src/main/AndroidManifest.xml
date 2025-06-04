@@ -3,6 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
     <uses-permission
         android:name="com.dergoogler.mmrl.permission.WEBUI_X"
@@ -14,14 +18,14 @@
 
     <permission
         android:name="com.dergoogler.mmrl.permission.WEBUI_X"
-        android:label="@string/permission_wx_label"
         android:description="@string/permission_wx_desc"
+        android:label="@string/permission_wx_label"
         android:protectionLevel="dangerous" />
 
     <permission
         android:name="com.dergoogler.mmrl.permission.WEBUI_LEGACY"
-        android:label="@string/permission_wl_label"
         android:description="@string/permission_wl_desc"
+        android:label="@string/permission_wl_label"
         android:protectionLevel="dangerous" />
 
 
@@ -83,5 +87,10 @@
                 <action android:name="NonRootService" />
             </intent-filter>
         </service>
+
+        <service
+            android:name=".service.PlatformService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse" />
     </application>
 </manifest>

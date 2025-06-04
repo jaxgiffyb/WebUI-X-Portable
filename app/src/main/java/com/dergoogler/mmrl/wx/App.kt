@@ -1,8 +1,13 @@
 package com.dergoogler.mmrl.wx
 
 import android.app.Application
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.util.Log
+import androidx.core.app.NotificationManagerCompat
 import com.dergoogler.mmrl.platform.PlatformManager
+import com.dergoogler.mmrl.wx.app.utils.NotificationUtils
+import com.dergoogler.mmrl.wx.service.PlatformService
 import com.dergoogler.mmrl.wx.util.extractZipFromAssets
 import dagger.hilt.android.HiltAndroidApp
 import java.io.File
@@ -20,6 +25,8 @@ class App : Application() {
             e.printStackTrace()
             Log.e(TAG, "onCreate: $e")
         }
+
+        NotificationUtils.init(this)
 
         PlatformManager.setHiddenApiExemptions()
     }

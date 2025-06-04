@@ -59,5 +59,6 @@
     <string name="permission_wx_desc">Allows other applications to use WebUI X in WebUI X: Portable</string>
     <string name="permission_wl_label">WebUI Legacy</string>
     <string name="permission_wl_desc">Allows other applications to use WebUI Legacy in WebUI X: Portable</string>
+    <string name="notification_platform_service">Platform Service</string>
 
 </resources>

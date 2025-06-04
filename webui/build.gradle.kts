@@ -42,8 +42,8 @@ android {
 }
 
 dependencies {
-    implementation(libs.mmrl.ext)
-    implementation(libs.mmrl.ui)
+    compileOnly(libs.mmrl.ext)
+    compileOnly(libs.mmrl.ui)
     compileOnly(libs.mmrl.platform)
     compileOnly(libs.mmrl.hiddenApi)
     implementation(libs.libsu.core)
