@@ -244,17 +244,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
-      - name: Upload spoofed APK to GitHub Release
-        if: steps.check_release.outputs.exists == 'false' && github.event.inputs.send_github == 'true'
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ steps.find_spoofed_apk.outputs.APK_PATH }}
-          asset_name: spoofed.apk
-          asset_content_type: application/vnd.android.package-archive
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        
       - name: Upload normal mapping to GitHub Release
         if: steps.check_release.outputs.exists == 'false' && github.event.inputs.send_github == 'true'
         uses: actions/upload-release-asset@v1
@@ -262,17 +251,6 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ steps.normal_mapping.outputs.MAPPING_PATH }}
           asset_name: mapping.txt
-          asset_content_type: text/plain
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        
-      - name: Upload spoofed mapping to GitHub Release
-        if: steps.check_release.outputs.exists == 'false' && github.event.inputs.send_github == 'true'
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ steps.spoofed_mapping.outputs.MAPPING_PATH }}
-          asset_name: spoofed-mapping.txt
           asset_content_type: text/plain
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
