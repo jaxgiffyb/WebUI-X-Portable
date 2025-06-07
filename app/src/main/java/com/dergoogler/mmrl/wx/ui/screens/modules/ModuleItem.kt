@@ -1,6 +1,5 @@
 package com.dergoogler.mmrl.wx.ui.screens.modules
 
-import android.widget.Toast
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -16,7 +15,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -39,7 +37,6 @@ import com.dergoogler.mmrl.ui.component.card.CardDefaults.cardStyle
 import com.dergoogler.mmrl.ext.nullable
 import com.dergoogler.mmrl.ext.nullply
 import com.dergoogler.mmrl.ext.takeTrue
-import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.content.LocalModule
 import com.dergoogler.mmrl.platform.content.LocalModule.Companion.config
@@ -50,8 +47,6 @@ import com.dergoogler.mmrl.platform.file.SuFile.Companion.toFormattedFileSize
 import com.dergoogler.mmrl.platform.model.ModId.Companion.moduleDir
 import com.dergoogler.mmrl.ui.component.LabelItemDefaults
 import com.dergoogler.mmrl.ui.component.LocalCover
-import com.dergoogler.mmrl.webui.activity.WXActivity.Companion.launchWebUIX
-import com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity
 import com.dergoogler.mmrl.wx.util.launchWebUI
 import com.dergoogler.mmrl.wx.util.toFormattedDateSafely
 import com.dergoogler.mmrl.wx.util.versionDisplay
@@ -142,7 +137,7 @@ fun ModuleItem(
                 if (module.lastUpdated != 0L && menu.showUpdatedTime) {
                     Text(
                         text = stringResource(
-                            id = R.string.update_at,
+                            id = R.string.update_on,
                             module.lastUpdated.toFormattedDateSafely
                         ),
                         style = MaterialTheme.typography.bodySmall,

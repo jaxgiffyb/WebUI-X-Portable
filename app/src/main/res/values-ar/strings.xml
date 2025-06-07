@@ -3,7 +3,7 @@
     <string name="missing_mod_id">معرف الإضافة مفقود</string>
     <string name="empty">فارغ</string>
     <string name="author">%1$s المطور: %2$s</string>
-    <string name="update_at">اخر تحديث: %s</string>
+    <string name="update_on">اخر تحديث: %s</string>
     <string name="modules">الإضافات</string>
     <string name="settings">الإعدادات</string>
     <string name="app_theme_palette">الثيمات</string>
