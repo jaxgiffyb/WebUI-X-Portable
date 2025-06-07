@@ -36,6 +36,7 @@
   <string name="modules_empty">モジュールが見つかりません</string>
   <string name="search_empty">空のリスト</string>
   <string name="search_placeholder">検索…</string>
+  
   <string name="menu_advanced_menu">高度なメニュー</string>
   <string name="menu_sort_mode">ソートモード</string>
   <string name="menu_sort_option_name">名前</string>
@@ -56,4 +57,9 @@
   <string name="settings_webui_engine_ksu">KSU WebUI</string>
   <string name="settings_webui_engine_prefer_module">モジュールの定義によって構成</string>
   <string name="menu_sort_option_size">サイズ</string>
+  <string name="permission_wx_label">WebUI X</string>
+  <string name="permission_wx_desc">WebUI X: Portable で他のアプリが WebUI X を使用できるようにします。</string>
+  <string name="permission_wl_label">WebUI Legacy</string>
+  <string name="permission_wl_desc">WebUI X: Portable で他のアプリが WebUI Legacy を使用できるようにします。</string>
+  <string name="notification_platform_service">プラットフォームサービス</string>
 </resources>
