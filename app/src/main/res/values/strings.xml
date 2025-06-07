@@ -60,5 +60,6 @@
     <string name="permission_wl_label">WebUI Legacy</string>
     <string name="permission_wl_desc">Allows other applications to use WebUI Legacy in WebUI X: Portable</string>
     <string name="notification_platform_service">Platform Service</string>
-
+    <string name="settings_date_pattern">Date pattern</string>
+    <string name="settings_date_pattern_desc">Use your own date format</string>
 </resources>

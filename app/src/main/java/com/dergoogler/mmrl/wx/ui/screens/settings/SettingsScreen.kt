@@ -28,10 +28,12 @@ import com.dergoogler.mmrl.ext.navigateSingleTopTo
 import com.dergoogler.mmrl.ext.none
 import com.dergoogler.mmrl.ext.nullable
 import com.dergoogler.mmrl.ext.takeTrue
+import com.dergoogler.mmrl.ext.toFormattedDateSafely
 import com.dergoogler.mmrl.ui.component.TopAppBar
 import com.dergoogler.mmrl.ui.component.toolbar.ToolbarTitle
 import com.dergoogler.mmrl.ui.component.dialog.RadioOptionItem
 import com.dergoogler.mmrl.ui.component.listItem.ListButtonItem
+import com.dergoogler.mmrl.ui.component.listItem.ListEditTextItem
 import com.dergoogler.mmrl.ui.component.listItem.ListEditTextSwitchItem
 import com.dergoogler.mmrl.ui.component.listItem.ListRadioCheckItem
 import com.dergoogler.mmrl.ui.component.listItem.ListSwitchItem
@@ -116,6 +118,21 @@ fun SettingsScreen() {
                 ),
                 onConfirm = {
                     viewModel.setWebUIEngine(it.value)
+                }
+            )
+
+            ListEditTextItem(
+                icon = R.drawable.calendar_cog,
+                title = stringResource(id = R.string.settings_date_pattern),
+                desc = stringResource(id = R.string.settings_date_pattern_desc),
+                dialog = {
+                    desc = {
+                        Text(text = System.currentTimeMillis().toFormattedDateSafely(it))
+                    }
+                },
+                value = userPreferences.datePattern,
+                onConfirm = {
+                    viewModel.setDatePattern(it)
                 }
             )
 
