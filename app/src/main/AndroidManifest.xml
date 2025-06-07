@@ -67,7 +67,12 @@
             android:exported="true"
             android:label="WebUI X"
             android:permission="com.dergoogler.mmrl.permission.WEBUI_X"
-            android:taskAffinity="${applicationId}.WEBUI_X" />
+            android:taskAffinity="${applicationId}.WEBUI_X">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
 
         <activity
             android:name=".ui.activity.webui.KsuWebUIActivity"
@@ -76,7 +81,12 @@
             android:exported="true"
             android:label="WebUI Legacy"
             android:permission="com.dergoogler.mmrl.permission.WEBUI_LEGACY"
-            android:taskAffinity="${applicationId}.KSU_WEBUI" />
+            android:taskAffinity="${applicationId}.KSU_WEBUI">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
 
         <service
             android:name=".util.NonRootService"

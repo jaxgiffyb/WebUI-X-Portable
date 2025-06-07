@@ -213,7 +213,7 @@ data class WebUIConfig(
                 return
             }
 
-            val shortcutIntent = Intent(context, cls::class.java).apply {
+            val shortcutIntent = Intent(context, cls).apply {
                 putModId(modId.toString())
             }
 
