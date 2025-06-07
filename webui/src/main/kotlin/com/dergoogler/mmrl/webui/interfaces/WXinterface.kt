@@ -206,7 +206,7 @@ open class WXInterface(
     ): R = try {
         block()
     } catch (e: Throwable) {
-        runJs("new Error('$message', { cause: \"${e.cause}\" })")
+        console.error(e)
         default
     }
 

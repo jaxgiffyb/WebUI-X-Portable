@@ -2,6 +2,7 @@ package com.dergoogler.mmrl.webui.interfaces
 
 import android.webkit.JavascriptInterface
 import androidx.annotation.Keep
+import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.webui.moshi
 import java.io.BufferedInputStream
 import java.io.InputStream
@@ -16,11 +17,12 @@ class FileInputInterface(
     @JavascriptInterface
     fun open(path: String): FileInputInterfaceStream? =
         try {
-            val file = com.dergoogler.mmrl.platform.file.SuFile(path)
+            val file = SuFile(path)
             val inputStream = file.newInputStream()
 
             FileInputInterfaceStream(inputStream, wxOptions)
         } catch (e: Exception) {
+            console.error(e)
             null
         }
 

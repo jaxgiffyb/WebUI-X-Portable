@@ -24,6 +24,7 @@ import com.dergoogler.mmrl.webui.client.WXClient
 import com.dergoogler.mmrl.webui.interfaces.ApplicationInterface
 import com.dergoogler.mmrl.webui.interfaces.FileInputInterface
 import com.dergoogler.mmrl.webui.interfaces.FileInterface
+import com.dergoogler.mmrl.webui.interfaces.FileOutputInterface
 import com.dergoogler.mmrl.webui.interfaces.ModuleInterface
 import com.dergoogler.mmrl.webui.interfaces.PackageManagerInterface
 import com.dergoogler.mmrl.webui.interfaces.UserManagerInterface
@@ -167,6 +168,7 @@ open class WXView(
 
     private fun addJavascriptInterfaces() {
         addJavascriptInterface<FileInputInterface>()
+        addJavascriptInterface<FileOutputInterface>()
         addJavascriptInterface<ApplicationInterface>()
         addJavascriptInterface<FileInterface>()
         addJavascriptInterface<ModuleInterface>()
