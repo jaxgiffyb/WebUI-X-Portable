@@ -76,7 +76,7 @@ fun ModuleItem(
     trailingButton = {
         val config = module.webUiConfig
 
-        ShortcutAddOrRemove(
+        ShortcutAdd(
             config = config,
             enabled = isProviderAlive && config.canAddWebUIShortcut()
         )
@@ -85,47 +85,28 @@ fun ModuleItem(
 
 
 @Composable
-private fun ShortcutAddOrRemove(
+private fun ShortcutAdd(
     config: WebUIConfig,
     enabled: Boolean,
 ) {
     val context = LocalContext.current
 
-    val hasShortcut = config.hasWebUIShortcut(context)
-
     FilledTonalButton(
         onClick = {
-            if (hasShortcut) {
-                config.removeShortcut(context)
-            } else {
-                config.createShortcut(context, WebUIActivity::class.java)
-            }
+            config.createShortcut(context, WebUIActivity::class.java)
         },
-        enabled = enabled,
+        enabled = enabled && !config.hasWebUIShortcut(context),
         contentPadding = PaddingValues(horizontal = 12.dp)
     ) {
         Icon(
             modifier = Modifier.size(20.dp),
-            painter = painterResource(
-                id = if (hasShortcut) {
-                    R.drawable.unlink
-                } else {
-                    R.drawable.link
-                }
-            ),
+            painter = painterResource(id = R.drawable.link),
             contentDescription = null
         )
 
         Spacer(modifier = Modifier.width(6.dp))
         Text(
-            text = stringResource(
-                id = if (hasShortcut) {
-                    R.string.remove_shortcut
-                } else {
-                    R.string.add_shortcut
-                }
-            )
+            text = stringResource(id = R.string.add_shortcut)
         )
     }
-
 }

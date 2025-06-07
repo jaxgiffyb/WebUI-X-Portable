@@ -178,15 +178,6 @@ data class WebUIConfig(
         return shortcutManager.pinnedShortcuts.any { it.id == shortcutId }
     }
 
-    fun removeShortcut(context: Context) {
-        val shortcutId = getShortcutId()
-        val shortcutManager = context.getSystemService(ShortcutManager::class.java)
-
-        if (shortcutManager.isRequestPinShortcutSupported) {
-            shortcutManager.removeDynamicShortcuts(listOf(shortcutId))
-        }
-    }
-
     fun createShortcut(
         context: Context,
         cls: Class<out WXActivity>,
