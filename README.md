@@ -15,3 +15,8 @@
   <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/5.png" width="32%" />
 </p>
 
+## Translate
+
+Get involved with WebUI X: Portable by translating it into your language!
+
+[![Translation status](https://hosted.weblate.org/widget/mmrl/webui-x-portable/multi-auto.svg)](https://hosted.weblate.org/engage/mmrl/)
