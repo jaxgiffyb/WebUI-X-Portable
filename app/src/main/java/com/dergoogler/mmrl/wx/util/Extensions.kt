@@ -208,3 +208,25 @@ fun UserPreferences.launchWebUI(context: Context, modId: ModId) {
 
     Toast.makeText(context, "Unknown WebUI engine", Toast.LENGTH_SHORT).show()
 }
+
+fun Map<String, Any?>?.getBoolProp(key: String, def: Boolean = false): Boolean {
+    val value = this?.get(key)
+
+    return if (value is Boolean) {
+        value
+    } else {
+        def
+    }
+}
+
+
+inline fun <reified T> Map<String, Any?>?.getProp(key: String, def: T): T {
+    val value = this?.get(key)
+    return if (value is T) {
+        value
+    } else {
+        def
+    }
+}
+
+inline fun <reified T> Map<String, Any?>?.getPropOrNull(key: String): T? = getProp(key, null)

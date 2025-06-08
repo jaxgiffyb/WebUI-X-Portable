@@ -24,10 +24,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.dergoogler.mmrl.ext.navigateSingleTopTo
 import com.dergoogler.mmrl.platform.content.LocalModule.Companion.hasWebUI
+import com.dergoogler.mmrl.ui.providable.LocalNavController
 import com.dergoogler.mmrl.webui.model.WebUIConfig
 import com.dergoogler.mmrl.webui.model.WebUIConfig.Companion.webUiConfig
 import com.dergoogler.mmrl.wx.ui.activity.webui.WebUIActivity
+import com.dergoogler.mmrl.wx.ui.navigation.graphs.ModulesScreen
 
 @Composable
 fun ModulesList(
@@ -64,24 +67,39 @@ fun ModulesList(
 fun ModuleItem(
     module: LocalModule,
     isProviderAlive: Boolean,
-) = ModuleItem(
-    module = module,
-    indicator = {
-        when (module.state) {
-            State.REMOVE -> StateIndicator(R.drawable.trash)
-            State.UPDATE -> StateIndicator(R.drawable.device_mobile_down)
-            else -> {}
-        }
-    },
-    trailingButton = {
-        val config = module.webUiConfig
+) {
+    val navController = LocalNavController.current
 
-        ShortcutAdd(
-            config = config,
-            enabled = isProviderAlive && config.canAddWebUIShortcut()
-        )
-    }
-)
+    ModuleItem(
+        module = module,
+        indicator = {
+            when (module.state) {
+                State.REMOVE -> StateIndicator(R.drawable.trash)
+                State.UPDATE -> StateIndicator(R.drawable.device_mobile_down)
+                else -> {}
+            }
+        },
+        leadingButton = {
+            ConfigButton(
+                onClick = {
+                    navController.navigateSingleTopTo(
+                        route =  ModulesScreen.Config.route,
+                        args = mapOf("id" to module.id.toString())
+                    )
+                },
+                enabled = module.state != State.REMOVE
+            )
+        },
+        trailingButton = {
+            val config = module.webUiConfig
+
+            ShortcutAdd(
+                config = config,
+                enabled = isProviderAlive && config.canAddWebUIShortcut()
+            )
+        }
+    )
+}
 
 
 @Composable
@@ -109,4 +127,21 @@ private fun ShortcutAdd(
             text = stringResource(id = R.string.add_shortcut)
         )
     }
+}
+
+
+@Composable
+private fun ConfigButton(
+    enabled: Boolean,
+    onClick: () -> Unit,
+) = FilledTonalButton(
+    onClick = onClick,
+    enabled = enabled,
+    contentPadding = PaddingValues(horizontal = 12.dp)
+) {
+    Icon(
+        modifier = Modifier.size(20.dp),
+        painter = painterResource(id = R.drawable.settings),
+        contentDescription = null
+    )
 }

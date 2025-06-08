@@ -100,8 +100,7 @@ open class WXActivity : ComponentActivity() {
      * @return The result of executing the [block] if a [ModId] is found, otherwise `null`.
      */
     fun <R> modId(block: ModId.() -> R): R? {
-        val id = modId
-        if (id == null) return null
+        val id = modId ?: return null
         return block(id)
     }
 
@@ -186,21 +185,19 @@ open class WXActivity : ComponentActivity() {
     private fun registerBackEvents() {
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                val handler: Any? = options.config.backInterceptor ?: options.config.backHandler
+                val backHandler = options.config.backHandler
+                val interceptor = options.config.backInterceptor
 
-                when (val backHandler = handler) {
-                    is String -> when (backHandler) {
-                        "native" -> handleNativeBack()
-                        "javascript" -> view.wx.postWXEvent(
-                            WXEventHandler(
-                                WXEvent.WX_ON_BACK,
-                                null
-                            )
-                        )
+                if (backHandler != true) {
+                    finish()
+                    return
+                }
 
-                        else -> finish()
-                    }
-
+                when (interceptor) {
+                    "native" -> handleNativeBack()
+                    "javascript" -> view.wx.postWXEvent(
+                        WXEventHandler(WXEvent.WX_ON_BACK, null)
+                    )
                     true -> handleNativeBack()
                     false, null -> finish()
                     else -> finish()

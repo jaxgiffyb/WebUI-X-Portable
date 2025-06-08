@@ -15,16 +15,14 @@ import kotlin.collections.orEmpty
 class NonRootModuleManager(
     private val context: Context,
 ) : BaseModuleManager() {
-    override fun getManagerName(): String? = "NonRoot"
+    override fun getManagerName(): String = "NonRoot"
 
     override fun getVersion(): String? = null
 
     override fun getVersionCode(): Int = 0
 
     override fun getModules(): List<LocalModule> {
-        val baseDir = context.getExternalFilesDir(null)
-
-        if (baseDir == null) return emptyList()
+        val baseDir = context.getExternalFilesDir(null) ?: return emptyList()
 
         val modulesDir = ExtFile(baseDir, ModId.MODULES_DIR)
 
@@ -38,6 +36,11 @@ class NonRootModuleManager(
                 val props = readProps(propsFile.readText())
                 props.toModule(baseDir.path)
             }
+    }
+
+    override fun getModuleById(id: ModId): LocalModule? {
+        val baseDir = context.getExternalFilesDir(null) ?: return null
+        return id.readProps?.toModule(baseDir.path)
     }
 
     override fun getModuleCompatibility(): ModuleCompatibility = ModuleCompatibility(

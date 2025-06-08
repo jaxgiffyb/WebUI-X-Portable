@@ -150,7 +150,7 @@ data class WebUIConfig(
     val title: String? = null,
     val icon: String? = null,
     val windowResize: Boolean = true,
-    @Deprecated("Use backInterceptor instead") val backHandler: Boolean? = true,
+    val backHandler: Boolean? = true,
     val backInterceptor: Any? = null,
     val refreshInterceptor: String? = null,
     val exitConfirm: Boolean = true,
