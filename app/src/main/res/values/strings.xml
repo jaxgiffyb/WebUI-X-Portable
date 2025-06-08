@@ -65,7 +65,7 @@
     <string name="controlled_by_native">Controlled by Native</string>
     <string name="controlled_by_javascript">Controlled by JavaScript</string>
     <string name="delete">Delete</string>
-    <string name="webui_config_">WebUI Config</string>
+    <string name="webui_config">WebUI Config</string>
     <string name="webui_config_exit_confirm_title">Exit Confirm</string>
     <string name="webui_config_exit_confirm_desc">Enables a confirmation dialog when exiting the WebUI.</string>
     <string name="webui_config_back_handler_title">Back Handler</string>
@@ -90,4 +90,7 @@
     <string name="webui_config_title_title">Title</string>
     <string name="webui_config_title_desc">No title defined</string>
     <string name="webui_config_icon_desc">No icon defined</string>
+    <string name="export_config">Export Config</string>
+    <string name="export_module_config_json">Export Module Config JSON</string>
+    <string name="export_webui_config_json">Export WebUI Config JSON</string>
 </resources>

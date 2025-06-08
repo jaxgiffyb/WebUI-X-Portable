@@ -17,9 +17,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -37,13 +39,17 @@ import androidx.compose.ui.unit.dp
 import com.dergoogler.mmrl.ext.moshi.moshi
 import com.dergoogler.mmrl.ext.none
 import com.dergoogler.mmrl.ext.nullable
+import com.dergoogler.mmrl.ext.shareFile
+import com.dergoogler.mmrl.ext.shareText
 import com.dergoogler.mmrl.platform.content.LocalModule
 import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.platform.model.ModId.Companion.moduleDir
 import com.dergoogler.mmrl.platform.model.ModId.Companion.webrootDir
+import com.dergoogler.mmrl.ui.component.BottomSheet
 import com.dergoogler.mmrl.ui.component.NavigateUpTopBar
 import com.dergoogler.mmrl.ui.component.card.Card
 import com.dergoogler.mmrl.ui.component.dialog.RadioOptionItem
+import com.dergoogler.mmrl.ui.component.listItem.ListButtonItem
 import com.dergoogler.mmrl.ui.component.listItem.ListEditTextItem
 import com.dergoogler.mmrl.ui.component.listItem.ListEditTextSwitchItem
 import com.dergoogler.mmrl.ui.component.listItem.ListHeader
@@ -105,6 +111,18 @@ fun ConfigEditorScreen(module: LocalModule) {
         mfile
     }
 
+    var exportBottomSheet by remember { mutableStateOf(false) }
+    if (exportBottomSheet) ExportBottomSheet(
+        onClose = { exportBottomSheet = false },
+        onModuleExport = {
+            context.shareText(moduleConfigFile.readText())
+        },
+        onConfigExport = {
+            context.shareText(webuiConfigFile.readText())
+        }
+    )
+
+
     var webuiConfigMap by remember { mutableStateOf<Map<String, Any>?>(null) }
     var moduleConfigMap by remember { mutableStateOf<Map<String, Any>?>(null) }
 
@@ -165,6 +183,18 @@ fun ConfigEditorScreen(module: LocalModule) {
                 title = "Config",
                 subtitle = module.name,
                 onBack = { navController.popBackStack() },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            exportBottomSheet = true
+                        }
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.file_export),
+                            contentDescription = null
+                        )
+                    }
+                }
             )
         },
         contentWindowInsets = WindowInsets.none
@@ -174,8 +204,7 @@ fun ConfigEditorScreen(module: LocalModule) {
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
         ) {
-            ListHeader(title = stringResource(R.string.webui_config_))
-
+            ListHeader(title = stringResource(R.string.webui_config))
 
             webuiConfigMap.nullable { config ->
                 val title = config.getPropOrNull<String?>("title")
@@ -432,4 +461,31 @@ private fun DexRemove(
     Text(
         text = stringResource(id = R.string.delete)
     )
+}
+
+@Composable
+private fun ExportBottomSheet(
+    onClose: () -> Unit,
+    onModuleExport: () -> Unit,
+    onConfigExport: () -> Unit,
+) = BottomSheet(
+    onDismissRequest = onClose
+) {
+    Text(
+        modifier = Modifier.padding(vertical = 16.dp, horizontal = 25.dp),
+        text = stringResource(R.string.export_config),
+        style = MaterialTheme.typography.headlineSmall.copy(color = MaterialTheme.colorScheme.primary)
+    )
+
+    ListButtonItem(
+        title = stringResource(R.string.export_module_config_json),
+        onClick = onModuleExport
+    )
+
+    ListButtonItem(
+        title = stringResource(R.string.export_webui_config_json),
+        onClick = onConfigExport
+    )
+
+    Spacer(Modifier.height(16.dp))
 }
