@@ -3,7 +3,7 @@
     <string name="missing_mod_id">缺少模块 ID</string>
     <string name="empty">空</string>
     <string name="author">%1$s 作者 %2$s</string>
-    <string name="update_at">更新于：%s</string>
+    <string name="update_on">更新于：%s</string>
     <string name="modules">模块</string>
     <string name="settings">设置</string>
     <string name="app_theme_palette">调色板</string>
