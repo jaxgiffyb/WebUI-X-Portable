@@ -9,25 +9,26 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
     <uses-permission
-        android:name="com.dergoogler.mmrl.permission.WEBUI_X"
+        android:name="${webuiPermissionId}.permission.WEBUI_X"
         android:protectionLevel="dangerous" />
 
     <uses-permission
-        android:name="com.dergoogler.mmrl.permission.WEBUI_LEGACY"
+        android:name="${webuiPermissionId}.permission.WEBUI_LEGACY"
         android:protectionLevel="dangerous" />
 
     <permission
-        android:name="com.dergoogler.mmrl.permission.WEBUI_X"
+        android:name="${webuiPermissionId}.permission.WEBUI_X"
         android:description="@string/permission_wx_desc"
         android:label="@string/permission_wx_label"
+        android:icon="@drawable/sandbox"
         android:protectionLevel="dangerous" />
 
     <permission
-        android:name="com.dergoogler.mmrl.permission.WEBUI_LEGACY"
+        android:name="${webuiPermissionId}.permission.WEBUI_LEGACY"
         android:description="@string/permission_wl_desc"
         android:label="@string/permission_wl_label"
+        android:icon="@drawable/kernelsu_logo"
         android:protectionLevel="dangerous" />
-
 
     <permission
         android:name="${applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
@@ -67,7 +68,7 @@
             android:documentLaunchMode="intoExisting"
             android:exported="true"
             android:label="WebUI X"
-            android:permission="com.dergoogler.mmrl.permission.WEBUI_X"
+            android:permission="${webuiPermissionId}.permission.WEBUI_X"
             android:taskAffinity="${applicationId}.WEBUI_X">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
@@ -81,7 +82,7 @@
             android:documentLaunchMode="intoExisting"
             android:exported="true"
             android:label="WebUI Legacy"
-            android:permission="com.dergoogler.mmrl.permission.WEBUI_LEGACY"
+            android:permission="${webuiPermissionId}.permission.WEBUI_LEGACY"
             android:taskAffinity="${applicationId}.KSU_WEBUI">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />

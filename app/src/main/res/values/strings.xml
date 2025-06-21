@@ -15,7 +15,8 @@
     <string name="settings_app_theme_desc">Change color scheme and night mode</string>
     <string name="webui">WebUI</string>
     <string name="settings_developer_mode">Developer Mode</string>
-    <string name="settings_developer_mode_desc">Shows IDs of modules and more</string>  <string name="settings_webui_remote_url">WebUI Remote URL</string>
+    <string name="settings_developer_mode_desc">Shows IDs of modules and more</string>
+    <string name="settings_webui_remote_url">WebUI Remote URL</string>
     <string name="settings_webui_remote_url_desc">To simplify debugging, provide a local domain such as http://localhost. See the alert above for more.</string>
     <string name="settings_webui_remote_url_alert_desc">WebUI X will consistently use your provided address for all modules and bypasses all SSL errors. Note that a self-signed local web server is required to use this feature, which is intended for debugging purposes only, is not meant for everyday use, and is used at your own risk.</string>
     <string name="invalid_ip">This is not a valid local domain!</string>
@@ -55,10 +56,6 @@
     <string name="settings_webui_engine_ksu">KSU WebUI</string>
     <string name="settings_webui_engine_prefer_module">Defined by the Module Config</string>
     <string name="menu_sort_option_size">Size</string>
-    <string name="permission_wx_label">WebUI X</string>
-    <string name="permission_wx_desc">Allows other applications to use WebUI X in WebUI X: Portable</string>
-    <string name="permission_wl_label">WebUI Legacy</string>
-    <string name="permission_wl_desc">Allows other applications to use WebUI Legacy in WebUI X: Portable</string>
     <string name="notification_platform_service">Platform Service</string>
     <string name="settings_date_pattern">Date pattern</string>
     <string name="settings_date_pattern_desc">Use your own date format</string>
@@ -93,4 +90,11 @@
     <string name="export_config">Export Config</string>
     <string name="export_module_config_json">Export Module Config JSON</string>
     <string name="export_webui_config_json">Export WebUI Config JSON</string>
+
+    <!-- Permissions -->
+    <string name="permission_wx_label">WebUI X</string>
+    <string name="permission_wx_desc">use WebUI X in WebUI X: Portable</string>
+    <string name="permission_wl_label">WebUI Legacy</string>
+    <string name="permission_wl_desc">use WebUI Legacy in WebUI X: Portable</string>
+
 </resources>

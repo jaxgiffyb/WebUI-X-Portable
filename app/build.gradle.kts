@@ -8,9 +8,10 @@ plugins {
 }
 
 val baseAppName = "WebUI X"
+val mmrlBaseApplicationId = "com.dergoogler.mmrl"
 
 android {
-    namespace = "com.dergoogler.mmrl.wx"
+    namespace = "$mmrlBaseApplicationId.wx"
     compileSdk = 35
 
     defaultConfig {
@@ -65,6 +66,8 @@ android {
             versionNameSuffix = "-release"
             renderscriptOptimLevel = 3
             multiDexEnabled = true
+
+            manifestPlaceholders["webuiPermissionId"] = mmrlBaseApplicationId
         }
 
         create("playstore") {
@@ -109,6 +112,8 @@ android {
             renderscriptOptimLevel = 0
             isMinifyEnabled = false
             multiDexEnabled = true
+
+            manifestPlaceholders["webuiPermissionId"] = "$mmrlBaseApplicationId.debug"
         }
 
         create("debugMin") {
