@@ -1,5 +1,6 @@
 package com.dergoogler.mmrl.wx.ui.screens.settings
 
+import android.util.Log
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -30,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
@@ -240,39 +242,57 @@ fun SettingsScreen() {
                     Description(R.string.settings_webui_remote_url_desc)
 
                     End {
-                        var switchHeightPx by remember { mutableIntStateOf(0) }
-                        val switchHeightDp = remember(switchHeightPx) { with(density) { switchHeightPx.toDp() } }
+                        val interactionSource = remember { MutableInteractionSource() }
 
-                        Row(
-                            modifier = Modifier,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            VerticalDivider(
-                                modifier = Modifier
-                                    .height(switchHeightDp)
-                                    .padding(16.dp),
-                                thickness = 1.dp,
+                        Layout(
+                            content = {
+                                VerticalDivider(
+                                    modifier = Modifier.padding(horizontal = 16.dp),
+                                    thickness = 1.dp
+                                )
+
+                                Switch(
+                                    modifier = Modifier
+                                        .toggleable(
+                                            value = userPreferences.useWebUiDevUrl,
+                                            onValueChange = viewModel::setUseWebUiDevUrl,
+                                            enabled = userPreferences.developerMode,
+                                            role = Role.Switch,
+                                            interactionSource = interactionSource,
+                                            indication = null
+                                        ),
+                                    checked = userPreferences.useWebUiDevUrl,
+                                    onCheckedChange = null,
+                                    interactionSource = interactionSource
+                                )
+                            }
+                        ) { measurables, constraints ->
+                            val dividerMeasurable = measurables[0]
+                            val switchMeasurable = measurables[1]
+
+                            // Measure switch first
+                            val switchPlaceable = switchMeasurable.measure(constraints)
+
+                            // Define divider height = switch height + padding
+                            val dividerHeight = switchPlaceable.height + 36
+                            val dividerPlaceable = dividerMeasurable.measure(
+                                constraints.copy(
+                                    minHeight = dividerHeight,
+                                    maxHeight = dividerHeight
+                                )
                             )
 
-                            val interactionSource = remember { MutableInteractionSource() }
+                            val width = dividerPlaceable.width + switchPlaceable.width
+                            val height = maxOf(dividerPlaceable.height, switchPlaceable.height)
 
-                            Switch(
-                                modifier = Modifier
-                                    .toggleable(
-                                        value = userPreferences.useWebUiDevUrl,
-                                        onValueChange = viewModel::setUseWebUiDevUrl,
-                                        enabled = userPreferences.developerMode,
-                                        role = Role.Switch,
-                                        interactionSource = interactionSource,
-                                        indication = null
-                                    )
-                                    .onGloballyPositioned { coordinates ->
-                                        switchHeightPx = coordinates.size.height
-                                    },
-                                checked = userPreferences.useWebUiDevUrl,
-                                onCheckedChange = null,
-                                interactionSource = remember { MutableInteractionSource() }
-                            )
+                            layout(width, height) {
+                                // Center divider vertically relative to the full layout
+                                val dividerY = (height - dividerPlaceable.height) / 2
+                                val switchY = (height - switchPlaceable.height) / 2
+
+                                dividerPlaceable.place(0, dividerY)
+                                switchPlaceable.place(dividerPlaceable.width, switchY)
+                            }
                         }
                     }
 
