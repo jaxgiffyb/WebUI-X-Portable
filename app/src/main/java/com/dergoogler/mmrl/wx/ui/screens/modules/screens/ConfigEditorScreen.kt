@@ -388,51 +388,52 @@ fun ConfigEditorScreen(module: LocalModule) {
                 dexFiles.forEachIndexed { index, it ->
                     if (it.path == null || it.className == null) return@forEachIndexed
 
-                    Card(
-                        modifier = {
-                            surface = Modifier.padding(16.dp)
-                            column = Modifier.padding(0.dp)
-                        }
-                    ) {
+                    Card {
                         val path = it.path!!
                         val className = it.className!!
 
-                        ListEditTextItem(
-                            title = stringResource(R.string.path),
-                            desc = path,
-                            value = path,
-                            onConfirm = { p ->
-                                dexFiles[index] = dexFiles[index].copy(path = p)
-                                config("dexFiles", dexFiles)
-                            }
-                        )
-
-                        ListEditTextItem(
-                            title = stringResource(R.string.class_name),
-                            desc = className,
-                            value = className,
-                            onConfirm = { c ->
-                                dexFiles[index] = dexFiles[index].copy(className = c)
-                                config("dexFiles", dexFiles)
-                            }
-                        )
-
-                        HorizontalDivider(
-                            thickness = 1.5.dp,
-                            color = MaterialTheme.colorScheme.surface,
-                            modifier = Modifier.padding(top = 8.dp)
-                        )
-
-                        Row(
+                        Column(
                             modifier = Modifier
-                                .padding(horizontal = 16.dp, vertical = 8.dp)
-                                .fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
+                                .relative()
+                                .padding(16.dp)
                         ) {
-                            Spacer(modifier = Modifier.weight(1f))
-                            DexRemove {
-                                dexFiles.remove(it)
-                                config("dexFiles", dexFiles)
+                            ListEditTextItem(
+                                title = stringResource(R.string.path),
+                                desc = path,
+                                value = path,
+                                onConfirm = { p ->
+                                    dexFiles[index] = dexFiles[index].copy(path = p)
+                                    config("dexFiles", dexFiles)
+                                }
+                            )
+
+                            ListEditTextItem(
+                                title = stringResource(R.string.class_name),
+                                desc = className,
+                                value = className,
+                                onConfirm = { c ->
+                                    dexFiles[index] = dexFiles[index].copy(className = c)
+                                    config("dexFiles", dexFiles)
+                                }
+                            )
+
+                            HorizontalDivider(
+                                thickness = 1.5.dp,
+                                color = MaterialTheme.colorScheme.surface,
+                                modifier = Modifier.padding(top = 8.dp)
+                            )
+
+                            Row(
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                                    .fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Spacer(modifier = Modifier.weight(1f))
+                                DexRemove {
+                                    dexFiles.remove(it)
+                                    config("dexFiles", dexFiles)
+                                }
                             }
                         }
                     }

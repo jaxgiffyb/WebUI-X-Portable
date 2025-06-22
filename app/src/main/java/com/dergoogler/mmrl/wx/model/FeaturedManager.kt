@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import com.dergoogler.mmrl.platform.Platform
 import com.dergoogler.mmrl.ui.component.dialog.RadioOptionItem
+import com.dergoogler.mmrl.ui.component.listItem.dsl.component.RadioDialogItem
 import com.dergoogler.mmrl.wx.R
 
 data class FeaturedManager(
@@ -14,7 +15,7 @@ data class FeaturedManager(
     val platform: Platform,
 ) {
     @Composable
-    fun toRadioOption() = RadioOptionItem(
+    fun toRadioOption() = RadioDialogItem(
         title = stringResource(name),
         value = platform
     )

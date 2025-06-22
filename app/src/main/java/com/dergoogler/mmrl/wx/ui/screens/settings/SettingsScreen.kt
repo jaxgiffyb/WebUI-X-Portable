@@ -1,26 +1,41 @@
 package com.dergoogler.mmrl.wx.ui.screens.settings
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.dp
 import com.dergoogler.mmrl.datastore.model.WebUIEngine
 import com.dergoogler.mmrl.datastore.providable.LocalUserPreferences
 import com.dergoogler.mmrl.ext.isLocalWifiUrl
@@ -30,6 +45,7 @@ import com.dergoogler.mmrl.ext.nullable
 import com.dergoogler.mmrl.ext.takeTrue
 import com.dergoogler.mmrl.ext.toFormattedDateSafely
 import com.dergoogler.mmrl.ui.component.TopAppBar
+import com.dergoogler.mmrl.ui.component.dialog.EditTextDialog
 import com.dergoogler.mmrl.ui.component.toolbar.ToolbarTitle
 import com.dergoogler.mmrl.ui.component.dialog.RadioOptionItem
 import com.dergoogler.mmrl.ui.component.listItem.ListButtonItem
@@ -37,10 +53,25 @@ import com.dergoogler.mmrl.ui.component.listItem.ListEditTextItem
 import com.dergoogler.mmrl.ui.component.listItem.ListEditTextSwitchItem
 import com.dergoogler.mmrl.ui.component.listItem.ListRadioCheckItem
 import com.dergoogler.mmrl.ui.component.listItem.ListSwitchItem
+import com.dergoogler.mmrl.ui.component.listItem.dsl.List
+import com.dergoogler.mmrl.ui.component.listItem.dsl.component.ButtonItem
+import com.dergoogler.mmrl.ui.component.listItem.dsl.component.RadioDialogItem
+import com.dergoogler.mmrl.ui.component.listItem.dsl.component.Section
+import com.dergoogler.mmrl.ui.component.listItem.dsl.component.SwitchItem
+import com.dergoogler.mmrl.ui.component.listItem.dsl.component.TextEditDialogItem
+import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Description
+import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.DialogDescription
+import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.DialogSupportingText
+import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.End
+import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Icon
+import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.LearnMore
+import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Title
 import com.dergoogler.mmrl.ui.providable.LocalNavController
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.model.FeaturedManager
 import com.dergoogler.mmrl.wx.model.managers
+import com.dergoogler.mmrl.wx.ui.component.DeveloperSwitch
+import com.dergoogler.mmrl.wx.ui.component.NavButton
 import com.dergoogler.mmrl.wx.ui.navigation.graphs.SettingsScreen
 import com.dergoogler.mmrl.wx.util.toWorkingMode
 import com.dergoogler.mmrl.wx.viewmodel.LocalSettings
@@ -52,6 +83,7 @@ fun SettingsScreen() {
     val viewModel = LocalSettings.current
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val navController = LocalNavController.current
+    val density = LocalDensity.current
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -65,127 +97,191 @@ fun SettingsScreen() {
         },
         contentWindowInsets = WindowInsets.none
     ) { innerPadding ->
-        Column(
+        List(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxWidth()
                 .verticalScroll(rememberScrollState())
         ) {
-            ListButtonItem(
-                icon = R.drawable.color_swatch,
-                title = stringResource(id = R.string.settings_app_theme),
-                desc = stringResource(id = R.string.settings_app_theme_desc),
-                onClick = {
-                    navController.navigateSingleTopTo(SettingsScreen.AppTheme.route)
-                }
-            )
-
-            val manager: FeaturedManager? =
-                managers.find { userPreferences.workingMode.toPlatform() == it.platform }
-
-            manager.nullable { mng ->
-                ListRadioCheckItem(
-                    icon = mng.icon,
-                    title = stringResource(id = R.string.platform),
-                    desc = stringResource(mng.name),
-                    options = managers.map { it.toRadioOption() },
-                    onConfirm = {
-                        viewModel.setWorkingMode(it.value.toWorkingMode())
-                    },
-                    value = mng.platform
+            Section(
+                title = stringResource(R.string.general)
+            ) {
+                NavButton(
+                    route = SettingsScreen.AppTheme.route,
+                    icon = R.drawable.color_swatch,
+                    title = R.string.settings_app_theme,
+                    desc = R.string.settings_app_theme_desc
                 )
+
+                val manager: FeaturedManager? =
+                    managers.find { userPreferences.workingMode.toPlatform() == it.platform }
+
+                manager.nullable { mng ->
+                    RadioDialogItem(
+                        selection = mng.platform,
+                        options = managers.map { it.toRadioOption() },
+                        onConfirm = {
+                            viewModel.setWorkingMode(it.value.toWorkingMode())
+                        },
+                    ) {
+                        Icon(
+                            painter = painterResource(mng.icon)
+                        )
+                        Title(R.string.platform)
+                        Description(mng.name)
+                    }
+                }
+
+                RadioDialogItem(
+                    selection = userPreferences.webuiEngine,
+                    options = listOf(
+                        RadioDialogItem(
+                            value = WebUIEngine.WX,
+                            title = stringResource(R.string.settings_webui_engine_wx)
+                        ),
+                        RadioDialogItem(
+                            value = WebUIEngine.KSU,
+                            title = stringResource(R.string.settings_webui_engine_ksu)
+                        ),
+                        RadioDialogItem(
+                            value = WebUIEngine.PREFER_MODULE,
+                            title = stringResource(R.string.settings_webui_engine_prefer_module)
+                        )
+                    ),
+                    onConfirm = {
+                        viewModel.setWebUIEngine(it.value)
+                    }
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.engine)
+                    )
+                    Title(R.string.settings_webui_engine)
+                    Description(R.string.settings_webui_engine_desc)
+                }
+
+                TextEditDialogItem(
+                    value = userPreferences.datePattern,
+                    onConfirm = {
+                        viewModel.setDatePattern(it)
+                    }
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.calendar_cog)
+                    )
+                    Title(R.string.settings_date_pattern)
+                    Description(R.string.settings_date_pattern_desc)
+
+                    val date = System.currentTimeMillis().toFormattedDateSafely(it.value)
+                    DialogDescription(R.string.settings_date_pattern_dialog_desc, date)
+                }
             }
 
-
-            ListRadioCheckItem(
-                icon = R.drawable.engine,
-                title = stringResource(R.string.settings_webui_engine),
-                desc = stringResource(R.string.settings_webui_engine_desc),
-                value = userPreferences.webuiEngine,
-                options = listOf(
-                    RadioOptionItem(
-                        value = WebUIEngine.WX,
-                        title = stringResource(R.string.settings_webui_engine_wx)
-                    ),
-                    RadioOptionItem(
-                        value = WebUIEngine.KSU,
-                        title = stringResource(R.string.settings_webui_engine_ksu)
-                    ),
-                    RadioOptionItem(
-                        value = WebUIEngine.PREFER_MODULE,
-                        title = stringResource(R.string.settings_webui_engine_prefer_module)
+            Section(
+                title = stringResource(R.string.developer)
+            ) {
+                SwitchItem(
+                    checked = userPreferences.developerMode,
+                    onChange = viewModel::setDeveloperMode
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.device_tablet_code)
                     )
-                ),
-                onConfirm = {
-                    viewModel.setWebUIEngine(it.value)
+                    Title(R.string.settings_developer_mode)
+                    Description(R.string.settings_developer_mode_desc)
                 }
-            )
 
-            ListEditTextItem(
-                icon = R.drawable.calendar_cog,
-                title = stringResource(id = R.string.settings_date_pattern),
-                desc = stringResource(id = R.string.settings_date_pattern_desc),
-                dialog = {
-                    desc = {
-                        Text(text = System.currentTimeMillis().toFormattedDateSafely(it))
-                    }
-                },
-                value = userPreferences.datePattern,
-                onConfirm = {
-                    viewModel.setDatePattern(it)
-                }
-            )
-
-            ListSwitchItem(
-                icon = R.drawable.device_tablet_code,
-                title = stringResource(id = R.string.settings_developer_mode),
-                desc = stringResource(id = R.string.settings_developer_mode_desc),
-                checked = userPreferences.developerMode,
-                onChange = viewModel::setDeveloperMode,
-            )
-
-            var webuiRemoteUrlInfo by remember { mutableStateOf(false) }
-            if (webuiRemoteUrlInfo) AlertDialog(
-                title = {
-                    Text(text = stringResource(id = R.string.settings_webui_remote_url))
-                },
-                text = {
-                    Text(text = stringResource(id = R.string.settings_webui_remote_url_alert_desc))
-                },
-                onDismissRequest = {
-                    webuiRemoteUrlInfo = false
-                },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            webuiRemoteUrlInfo = false
+                var webuiRemoteUrlInfo by remember { mutableStateOf(false) }
+                if (webuiRemoteUrlInfo) AlertDialog(
+                    title = {
+                        Text(text = stringResource(id = R.string.settings_webui_remote_url))
+                    },
+                    text = {
+                        Text(text = stringResource(id = R.string.settings_webui_remote_url_alert_desc))
+                    },
+                    onDismissRequest = {
+                        webuiRemoteUrlInfo = false
+                    },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                webuiRemoteUrlInfo = false
+                            }
+                        ) {
+                            Text(text = stringResource(id = android.R.string.ok))
                         }
-                    ) {
-                        Text(text = stringResource(id = android.R.string.ok))
-                    }
-                },
-            )
+                    },
+                )
 
-            ListEditTextSwitchItem(
-                icon = R.drawable.forms,
-                enabled = userPreferences.developerMode,
-                title = stringResource(id = R.string.settings_webui_remote_url),
-                desc = stringResource(id = R.string.settings_webui_remote_url_desc),
-                value = userPreferences.webUiDevUrl,
-                checked = userPreferences.useWebUiDevUrl,
-                onChange = viewModel::setUseWebUiDevUrl,
-                onConfirm = {
-                    viewModel.setWebUiDevUrl(it)
-                },
-                onValid = { !it.isLocalWifiUrl() },
-                base = {
-                    learnMore = {
+                DeveloperSwitch(
+                    enabled = !userPreferences.useWebUiDevUrl,
+                    checked = userPreferences.enableErudaConsole && !userPreferences.useWebUiDevUrl,
+                    onChange = viewModel::setEnableEruda
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.square_chevrons_left)
+                    )
+                    Title(R.string.settings_security_inject_eruda)
+                    Description(R.string.settings_security_inject_eruda_desc)
+                }
+
+                TextEditDialogItem(
+                    enabled = userPreferences.developerMode,
+                    value = userPreferences.webUiDevUrl,
+                    onConfirm = {
+                        viewModel.setWebUiDevUrl(it)
+                    },
+                    onValid = { !it.isLocalWifiUrl() },
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.forms)
+                    )
+
+                    Title(R.string.settings_webui_remote_url)
+                    Description(R.string.settings_webui_remote_url_desc)
+
+                    End {
+                        var switchHeightPx by remember { mutableIntStateOf(0) }
+                        val switchHeightDp = remember(switchHeightPx) { with(density) { switchHeightPx.toDp() } }
+
+                        Row(
+                            modifier = Modifier,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            VerticalDivider(
+                                modifier = Modifier
+                                    .height(switchHeightDp)
+                                    .padding(16.dp),
+                                thickness = 1.dp,
+                            )
+
+                            val interactionSource = remember { MutableInteractionSource() }
+
+                            Switch(
+                                modifier = Modifier
+                                    .toggleable(
+                                        value = userPreferences.useWebUiDevUrl,
+                                        onValueChange = viewModel::setUseWebUiDevUrl,
+                                        enabled = userPreferences.developerMode,
+                                        role = Role.Switch,
+                                        interactionSource = interactionSource,
+                                        indication = null
+                                    )
+                                    .onGloballyPositioned { coordinates ->
+                                        switchHeightPx = coordinates.size.height
+                                    },
+                                checked = userPreferences.useWebUiDevUrl,
+                                onCheckedChange = null,
+                                interactionSource = remember { MutableInteractionSource() }
+                            )
+                        }
+                    }
+
+                    LearnMore {
                         webuiRemoteUrlInfo = true
                     }
-                },
-                dialog = {
-                    supportingText = { isError ->
-                        isError.takeTrue {
+
+                    it.isError.takeTrue {
+                        DialogSupportingText {
                             Text(
                                 text = stringResource(R.string.invalid_ip),
                                 color = MaterialTheme.colorScheme.error,
@@ -193,17 +289,8 @@ fun SettingsScreen() {
                             )
                         }
                     }
-                },
-            )
-
-            ListSwitchItem(
-                icon = R.drawable.square_chevrons_left,
-                enabled = userPreferences.developerMode && !userPreferences.useWebUiDevUrl,
-                title = stringResource(R.string.settings_security_inject_eruda),
-                desc = stringResource(R.string.settings_security_inject_eruda_desc),
-                checked = userPreferences.enableErudaConsole && !userPreferences.useWebUiDevUrl,
-                onChange = viewModel::setEnableEruda
-            )
+                }
+            }
         }
     }
 }

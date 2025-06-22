@@ -36,6 +36,7 @@ import com.dergoogler.mmrl.ui.component.card.Card
 import com.dergoogler.mmrl.ui.component.card.CardDefaults.cardStyle
 import com.dergoogler.mmrl.ext.nullable
 import com.dergoogler.mmrl.ext.nullply
+import com.dergoogler.mmrl.ext.nullvoke
 import com.dergoogler.mmrl.ext.takeTrue
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.content.LocalModule
@@ -47,6 +48,8 @@ import com.dergoogler.mmrl.platform.file.SuFile.Companion.toFormattedFileSize
 import com.dergoogler.mmrl.platform.model.ModId.Companion.moduleDir
 import com.dergoogler.mmrl.ui.component.LabelItemDefaults
 import com.dergoogler.mmrl.ui.component.LocalCover
+import com.dergoogler.mmrl.ui.component.card.component.Absolute
+import com.dergoogler.mmrl.ui.component.card.component.Relative
 import com.dergoogler.mmrl.wx.util.launchWebUI
 import com.dergoogler.mmrl.wx.util.toFormattedDateSafely
 import com.dergoogler.mmrl.wx.util.versionDisplay
@@ -56,7 +59,7 @@ fun ModuleItem(
     module: LocalModule,
     alpha: Float = 1f,
     decoration: TextDecoration = TextDecoration.None,
-    indicator: @Composable() (BoxScope.() -> Unit?)? = null,
+    indicator: @Composable() (() -> Unit?)? = null,
     leadingButton: @Composable() (RowScope.() -> Unit)? = null,
     trailingButton: @Composable() (RowScope.() -> Unit)? = null,
 ) {
@@ -76,133 +79,136 @@ fun ModuleItem(
     }
 
     Card(
-        modifier = {
-            column = Modifier.padding(0.dp)
-        },
-        style = cardStyle.copy(
-            boxContentAlignment = Alignment.Center,
-        ),
-        absolute = {
-            indicator?.invoke(this)
-        },
         onClick = clicker
     ) {
-        config.cover.nullable(menu.showCover) {
-            val file = SuFile(module.id.moduleDir, it)
-
-            file.exists {
-                LocalCover(
-                    modifier = Modifier.fadingEdge(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Transparent,
-                                Color.Black,
-                            ),
-                            startY = Float.POSITIVE_INFINITY,
-                            endY = 0f
-                        ),
-                    ),
-                    inputStream = it.newInputStream(),
-                )
+        Absolute(
+            alignment = Alignment.Center,
+        ) {
+            indicator.nullable {
+                it()
             }
         }
 
-        Row(
-            modifier = Modifier.padding(all = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier.relative()
         ) {
-            Column(
-                modifier = Modifier
-                    .alpha(alpha = alpha)
-                    .weight(1f),
-                verticalArrangement = Arrangement.spacedBy(2.dp)
-            ) {
-                Text(
-                    text = config.name ?: module.name,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.titleSmall
-                )
+            config.cover.nullable(menu.showCover) {
+                val file = SuFile(module.id.moduleDir, it)
 
-                Text(
-                    text = stringResource(
-                        id = R.string.author,
-                        module.versionDisplay, module.author
-                    ),
-                    style = MaterialTheme.typography.bodySmall,
-                    textDecoration = decoration,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-
-                if (module.lastUpdated != 0L && menu.showUpdatedTime) {
-                    Text(
-                        text = stringResource(
-                            id = R.string.update_on,
-                            module.lastUpdated.toFormattedDateSafely
+                file.exists {
+                    LocalCover(
+                        modifier = Modifier.fadingEdge(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.Transparent,
+                                    Color.Black,
+                                ),
+                                startY = Float.POSITIVE_INFINITY,
+                                endY = 0f
+                            ),
                         ),
-                        style = MaterialTheme.typography.bodySmall,
-                        textDecoration = decoration,
-                        color = MaterialTheme.colorScheme.outline
+                        inputStream = it.newInputStream(),
                     )
                 }
             }
-        }
 
-        Text(
-            modifier = Modifier
-                .alpha(alpha = alpha)
-                .padding(horizontal = 16.dp),
-            text = config.description ?: module.description,
-            style = MaterialTheme.typography.bodySmall,
-            textDecoration = decoration,
-            maxLines = 5,
-            overflow = TextOverflow.Ellipsis,
-            color = MaterialTheme.colorScheme.outline
-        )
+            Row(
+                modifier = Modifier.padding(all = 16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(
+                    modifier = Modifier
+                        .alpha(alpha = alpha)
+                        .weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                ) {
+                    Text(
+                        text = config.name ?: module.name,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.titleSmall
+                    )
 
-        Row(
-            modifier = Modifier
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            userPreferences.developerMode.takeTrue {
-                LabelItem(
-                    text = module.id.toString(),
-                    upperCase = false
-                )
+                    Text(
+                        text = stringResource(
+                            id = R.string.author,
+                            module.versionDisplay, module.author
+                        ),
+                        style = MaterialTheme.typography.bodySmall,
+                        textDecoration = decoration,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+
+                    if (module.lastUpdated != 0L && menu.showUpdatedTime) {
+                        Text(
+                            text = stringResource(
+                                id = R.string.update_on,
+                                module.lastUpdated.toFormattedDateSafely
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                            textDecoration = decoration,
+                            color = MaterialTheme.colorScheme.outline
+                        )
+                    }
+                }
             }
 
-            LabelItem(
-                text = module.size.toFormattedFileSize(),
-                style = LabelItemDefaults.style.copy(
-                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-                )
+            Text(
+                modifier = Modifier
+                    .alpha(alpha = alpha)
+                    .padding(horizontal = 16.dp),
+                text = config.description ?: module.description,
+                style = MaterialTheme.typography.bodySmall,
+                textDecoration = decoration,
+                maxLines = 5,
+                overflow = TextOverflow.Ellipsis,
+                color = MaterialTheme.colorScheme.outline
             )
-        }
 
-        HorizontalDivider(
-            thickness = 1.5.dp,
-            color = MaterialTheme.colorScheme.surface,
-            modifier = Modifier.padding(top = 8.dp)
-        )
+            Row(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                userPreferences.developerMode.takeTrue {
+                    LabelItem(
+                        text = module.id.toString(),
+                        upperCase = false
+                    )
+                }
 
-        Row(
-            modifier = Modifier
-                .padding(horizontal = 16.dp, vertical = 8.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            leadingButton.nullply {
-                this()
+                LabelItem(
+                    text = module.size.toFormattedFileSize(),
+                    style = LabelItemDefaults.style.copy(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                )
             }
 
-            Spacer(modifier = Modifier.weight(1f))
+            HorizontalDivider(
+                thickness = 1.5.dp,
+                color = MaterialTheme.colorScheme.surface,
+                modifier = Modifier.padding(top = 8.dp)
+            )
 
-            trailingButton.nullply {
-                this()
+            Row(
+                modifier = Modifier
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                leadingButton.nullply {
+                    this()
+                }
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                trailingButton.nullply {
+                    this()
+                }
             }
         }
     }

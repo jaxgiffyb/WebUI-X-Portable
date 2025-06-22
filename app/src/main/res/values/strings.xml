@@ -59,6 +59,7 @@
     <string name="notification_platform_service">Platform Service</string>
     <string name="settings_date_pattern">Date pattern</string>
     <string name="settings_date_pattern_desc">Use your own date format</string>
+    <string name="settings_date_pattern_dialog_desc">The date will be parsed as [color=primary]%1$s[/color]</string>
     <string name="controlled_by_native">Controlled by Native</string>
     <string name="controlled_by_javascript">Controlled by JavaScript</string>
     <string name="delete">Delete</string>
@@ -96,5 +97,7 @@
     <string name="permission_wx_desc">use WebUI X in WebUI X: Portable</string>
     <string name="permission_wl_label">WebUI Legacy</string>
     <string name="permission_wl_desc">use WebUI Legacy in WebUI X: Portable</string>
+    <string name="general">General</string>
+    <string name="developer">Developer</string>
 
 </resources>
