@@ -18,6 +18,7 @@ import com.dergoogler.mmrl.webui.interfaces.ApplicationInterface
 import com.dergoogler.mmrl.webui.interfaces.FileInputInterface
 import com.dergoogler.mmrl.webui.interfaces.FileInterface
 import com.dergoogler.mmrl.webui.interfaces.FileOutputInterface
+import com.dergoogler.mmrl.webui.interfaces.IntentInterface
 import com.dergoogler.mmrl.webui.interfaces.ModuleInterface
 import com.dergoogler.mmrl.webui.interfaces.PackageManagerInterface
 import com.dergoogler.mmrl.webui.interfaces.UserManagerInterface
@@ -157,6 +158,7 @@ open class WXView(
         addJavascriptInterface<ModuleInterface>()
         addJavascriptInterface<UserManagerInterface>()
         addJavascriptInterface<PackageManagerInterface>()
+        addJavascriptInterface<IntentInterface>()
 
         if (options.config.dexFiles.isNotEmpty()) {
             for (dexFile in options.config.dexFiles) {

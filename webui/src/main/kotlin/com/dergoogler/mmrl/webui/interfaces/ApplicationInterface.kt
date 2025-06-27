@@ -9,6 +9,8 @@ import com.dergoogler.mmrl.webui.compat.MediaStoreCompat.getPathForUri
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.webui.model.App
 import com.squareup.moshi.JsonClass
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @Keep
 class ApplicationInterface(
@@ -78,27 +80,25 @@ class ApplicationInterface(
     }
 
     @JavascriptInterface
-    fun openFile() {
-        openFile(null)
-    }
-
-    @JavascriptInterface
-    fun openFile(filter: String?) {
-        if (activity == null) {
-            console.error(Exception("Activity is null"))
+    fun openFile(i: IntentData?) {
+        if (i == null) {
+            console.error(Exception("Intent is null"))
             return
         }
 
-        val uriFilter: String? = filter ?: "*/*"
+        scope.launch(Dispatchers.IO) {
+            val chooser = Intent.createChooser(i.intent, "Select File")
+            withActivity {
+                startActivityForResult(chooser, PICK_FILE_REQUEST)
+            }
+        }
+    }
 
-        val intent = Intent(Intent.ACTION_GET_CONTENT)
-        intent.setType(uriFilter)
-        intent.addCategory(Intent.CATEGORY_OPENABLE)
-        intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true)
-
-        val chooser = Intent.createChooser(intent, "Select File")
-
-        activity.startActivityForResult(chooser, PICK_FILE_REQUEST)
+    @JavascriptInterface
+    fun startActivity(i: IntentData) {
+        withActivity {
+            startActivity(i.intent)
+        }
     }
 
     @JsonClass(generateAdapter = true)
