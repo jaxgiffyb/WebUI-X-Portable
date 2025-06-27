@@ -96,8 +96,10 @@ class ApplicationInterface(
 
     @JavascriptInterface
     fun startActivity(i: IntentData) {
-        withActivity {
-            startActivity(i.intent)
+        scope.launch(Dispatchers.IO) {
+            withActivity {
+                startActivity(i.intent)
+            }
         }
     }
 
