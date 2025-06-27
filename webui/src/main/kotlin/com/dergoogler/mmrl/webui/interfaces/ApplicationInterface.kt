@@ -1,10 +1,14 @@
 package com.dergoogler.mmrl.webui.interfaces
 
+import android.app.Activity
+import android.content.Intent
 import android.webkit.JavascriptInterface
 import androidx.annotation.Keep
 import androidx.core.content.pm.PackageInfoCompat
+import com.dergoogler.mmrl.webui.compat.MediaStoreCompat.getPathForUri
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.webui.model.App
+import com.squareup.moshi.JsonClass
 
 @Keep
 class ApplicationInterface(
@@ -71,5 +75,65 @@ class ApplicationInterface(
             versionName = versionName,
             versionCode = versionCode
         )
+    }
+
+    @JavascriptInterface
+    fun openFile() {
+        openFile(null)
+    }
+
+    @JavascriptInterface
+    fun openFile(filter: String?) {
+        if (activity == null) {
+            console.error(Exception("Activity is null"))
+            return
+        }
+
+        val uriFilter: String? = filter ?: "*/*"
+
+        val intent = Intent(Intent.ACTION_GET_CONTENT)
+        intent.setType(uriFilter)
+        intent.addCategory(Intent.CATEGORY_OPENABLE)
+        intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true)
+
+        val chooser = Intent.createChooser(intent, "Select File")
+
+        activity.startActivityForResult(chooser, PICK_FILE_REQUEST)
+    }
+
+    @JsonClass(generateAdapter = true)
+    data class OnResultData(
+        val path: String?,
+    )
+
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+    ) {
+        if (requestCode != PICK_FILE_REQUEST) return
+
+        if (resultCode == Activity.RESULT_OK) {
+            val uri = data?.data
+            val path = context.getPathForUri(uri ?: return)
+
+            webView.postWXEvent(PICK_FILE_EVENT_NAME, OnResultData(path))
+
+            return
+        }
+
+        if (resultCode == Activity.RESULT_CANCELED) {
+            webView.postWXEvent(PICK_FILE_EVENT_NAME, null)
+
+            return
+        }
+
+        webView.postWXEvent(PICK_FILE_EVENT_NAME, null)
+    }
+
+    private companion object {
+        const val PICK_FILE_REQUEST: Int = 1
+        const val PICK_FILE_EVENT_NAME: String = "filepicked"
+        const val TAG: String = "ApplicationInterface"
     }
 }

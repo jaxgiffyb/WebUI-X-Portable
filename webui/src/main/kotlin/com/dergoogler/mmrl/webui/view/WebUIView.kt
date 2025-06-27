@@ -1,7 +1,6 @@
 package com.dergoogler.mmrl.webui.view
 
 import android.annotation.SuppressLint
-import android.app.ComponentCaller
 import android.content.Context
 import android.content.Intent
 import android.util.AttributeSet
@@ -261,10 +260,9 @@ open class WebUIView(
         requestCode: Int,
         resultCode: Int,
         data: Intent?,
-        caller: ComponentCaller,
     ) {
         interfaces.forEach { inst ->
-            inst.instance.onActivityResult(requestCode, resultCode, data, caller)
+            inst.instance.onActivityResult(requestCode, resultCode, data)
         }
     }
 

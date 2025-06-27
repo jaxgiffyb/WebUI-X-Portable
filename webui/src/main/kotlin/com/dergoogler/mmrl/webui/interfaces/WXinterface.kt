@@ -1,7 +1,6 @@
 package com.dergoogler.mmrl.webui.interfaces
 
 import android.app.Activity
-import android.app.ComponentCaller
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
@@ -157,11 +156,22 @@ open class WXInterface(
     open fun onActivityResume() {}
     open fun onActivityStop() {}
     open fun onActivityPause() {}
+
+    /**
+     * Handles the result from an activity that was started for a result.
+     *
+     * This function is called when the activity receives a result from another activity.
+     * It invokes the previously set callback (if any) with the request code, result code, and intent data.
+     *
+     * @param requestCode The request code originally supplied to startActivityForResult(),
+     *                    allowing you to identify which activity result is being received.
+     * @param resultCode The result code returned by the child activity.
+     * @param data An Intent, which can return result data to the parent activity.
+     */
     open fun onActivityResult(
         requestCode: Int,
         resultCode: Int,
         data: Intent?,
-        caller: ComponentCaller,
     ) {}
 
     @UiThread

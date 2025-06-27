@@ -1,7 +1,6 @@
 package com.dergoogler.mmrl.webui.activity
 
 import android.app.ActivityManager
-import android.app.ComponentCaller
 import android.content.Context
 import android.content.Intent
 import android.graphics.Rect
@@ -58,6 +57,7 @@ import com.dergoogler.mmrl.webui.view.WebUIXView
  * @property options The [WebUIOptions] used to configure the web UI. Must be initialized.
  * @property modId Lazily initialized [ModId] from intent extras.
  */
+@Suppress("OVERRIDE_DEPRECATION")
 open class WXActivity : ComponentActivity() {
     private var isKeyboardShowing by mutableStateOf(false)
     private lateinit var rootView: View
@@ -231,24 +231,21 @@ open class WXActivity : ComponentActivity() {
         finish()
     }
 
+   override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?
+    ) {
+        super.onActivityResult(requestCode, resultCode, data)
+        view.wx.onActivityResult(requestCode, resultCode, data)
+    }
+
     override fun onDestroy() {
+        super.onDestroy()
         with(view.wx) {
             onActivityDestroyInterfaces()
             destroy()
         }
-
-        super.onDestroy()
-
-    }
-
-    override fun onActivityResult(
-        requestCode: Int,
-        resultCode: Int,
-        data: Intent?,
-        caller: ComponentCaller
-    ) {
-        super.onActivityResult(requestCode, resultCode, data, caller)
-        view.wx.onActivityResult(requestCode, resultCode, data,caller)
     }
 
     override fun onResume() {
