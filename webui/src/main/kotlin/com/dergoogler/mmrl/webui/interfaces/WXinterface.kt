@@ -1,8 +1,10 @@
 package com.dergoogler.mmrl.webui.interfaces
 
 import android.app.Activity
+import android.app.ComponentCaller
 import android.content.Context
 import android.content.ContextWrapper
+import android.content.Intent
 import android.os.Handler
 import android.webkit.WebView
 import androidx.annotation.Keep
@@ -150,6 +152,17 @@ open class WXInterface(
 
         return block(activity)
     }
+
+    open fun onActivityDestroy() {}
+    open fun onActivityResume() {}
+    open fun onActivityStop() {}
+    open fun onActivityPause() {}
+    open fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+        caller: ComponentCaller,
+    ) {}
 
     @UiThread
     fun runMainLooperPost(action: Activity.() -> Unit) {

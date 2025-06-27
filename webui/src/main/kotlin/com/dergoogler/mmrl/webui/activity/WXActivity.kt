@@ -1,6 +1,7 @@
 package com.dergoogler.mmrl.webui.activity
 
 import android.app.ActivityManager
+import android.app.ComponentCaller
 import android.content.Context
 import android.content.Intent
 import android.graphics.Rect
@@ -198,6 +199,7 @@ open class WXActivity : ComponentActivity() {
                     "javascript" -> view.wx.postWXEvent(
                         WXEventHandler(WXEvent.WX_ON_BACK, null)
                     )
+
                     true -> handleNativeBack()
                     null -> handleNativeBack()
                     false -> finish()
@@ -230,9 +232,23 @@ open class WXActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
-        view.wx.destroy()
+        with(view.wx) {
+            onActivityDestroyInterfaces()
+            destroy()
+        }
+
         super.onDestroy()
 
+    }
+
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+        caller: ComponentCaller
+    ) {
+        super.onActivityResult(requestCode, resultCode, data, caller)
+        view.wx.onActivityResult(requestCode, resultCode, data,caller)
     }
 
     override fun onResume() {
@@ -240,6 +256,7 @@ open class WXActivity : ComponentActivity() {
             this.onResume()
             resumeTimers()
             postWXEvent(WXEvent.WX_ON_RESUME)
+            onActivityResumeInterfaces()
         }
 
         super.onResume()
@@ -250,9 +267,19 @@ open class WXActivity : ComponentActivity() {
             this.onPause()
             pauseTimers()
             postWXEvent(WXEvent.WX_ON_PAUSE)
+            onActivityPauseInterfaces()
         }
 
         super.onPause()
+    }
+
+    override fun onStop() {
+        with(view.wx) {
+            onActivityStopInterfaces()
+        }
+
+        super.onStop()
+
     }
 
     /**

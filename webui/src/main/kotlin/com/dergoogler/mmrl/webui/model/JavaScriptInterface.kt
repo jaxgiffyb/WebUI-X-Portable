@@ -20,9 +20,11 @@ data class JavaScriptInterface<T : WXInterface>(
     val parameterTypes: Array<Class<*>>? = null,
 ) {
     data class Instance(
-        val name: String,
-        val instance: Any,
-    )
+        private val inst: WXInterface
+    ) {
+        val name: String = inst.name
+        val instance: WXInterface = inst
+    }
 
     fun createNew(wxOptions: WXOptions): Instance {
         val constructor = if (parameterTypes != null) {
@@ -37,9 +39,7 @@ data class JavaScriptInterface<T : WXInterface>(
             constructor.newInstance(wxOptions)
         }
 
-        val name = (newInstance as WXInterface).name
-
-        return Instance(name, newInstance)
+        return Instance((newInstance as WXInterface))
     }
 
     override fun equals(other: Any?): Boolean {

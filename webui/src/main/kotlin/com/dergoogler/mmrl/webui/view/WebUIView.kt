@@ -1,7 +1,9 @@
 package com.dergoogler.mmrl.webui.view
 
 import android.annotation.SuppressLint
+import android.app.ComponentCaller
 import android.content.Context
+import android.content.Intent
 import android.util.AttributeSet
 import android.util.Log
 import android.view.ViewGroup.LayoutParams
@@ -84,7 +86,7 @@ open class WebUIView(
         options = options
     )
 
-    protected val interfaces = hashSetOf<String>()
+    protected val interfaces = hashSetOf<JavaScriptInterface.Instance>()
 
     protected open fun onInit(isInitialized: Boolean) {}
 
@@ -255,12 +257,47 @@ open class WebUIView(
         initJob?.cancel()
     }
 
+    open fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+        caller: ComponentCaller,
+    ) {
+        interfaces.forEach { inst ->
+            inst.instance.onActivityResult(requestCode, resultCode, data, caller)
+        }
+    }
+
+    open fun onActivityResumeInterfaces() {
+        interfaces.forEach { inst ->
+            inst.instance.onActivityResume()
+        }
+    }
+
+    open fun onActivityDestroyInterfaces() {
+        interfaces.forEach { inst ->
+            inst.instance.onActivityDestroy()
+        }
+    }
+
+    open fun onActivityPauseInterfaces() {
+        interfaces.forEach { inst ->
+            inst.instance.onActivityPause()
+        }
+    }
+
+    open fun onActivityStopInterfaces() {
+        interfaces.forEach { inst ->
+            inst.instance.onActivityStop()
+        }
+    }
+
     override fun destroy() {
         cleanup()
 
         // remove all interfaces
         for (obj in interfaces) {
-            removeJavascriptInterface(obj)
+            removeJavascriptInterface(obj.name)
         }
 
         super.destroy()
@@ -271,25 +308,10 @@ open class WebUIView(
     }
 
     /**
-     * Adds a JavaScript interface to this WebView.
-     *
-     * This method overrides the default `addJavascriptInterface` method to keep track of added interfaces
-     * and prevent duplicate additions.
-     *
-     * @param obj The object to be exposed as a JavaScript interface.
-     * @param name The name of the JavaScript interface.
+     * # DO NOT USE
      */
     @SuppressLint("JavascriptInterface")
     override fun addJavascriptInterface(obj: Any, name: String) {
-        if (name in interfaces) {
-            Log.w(TAG, "Interface $name already exists")
-            return
-        }
-
-        interfaces += name
-
-        Log.d(TAG, "Added interface $name")
-
         super.addJavascriptInterface(obj, name)
     }
 
@@ -308,6 +330,16 @@ open class WebUIView(
     fun addJavascriptInterface(obj: JavaScriptInterface<out WXInterface>) {
         try {
             val js = obj.createNew(createDefaultWxOptions(options))
+
+            if (js in interfaces) {
+                Log.w(TAG, "Interface ${js.name} already exists")
+                return
+            }
+
+            interfaces += js
+
+            Log.d(TAG, "Added interface ${js.name}")
+
             addJavascriptInterface(js.instance, js.name)
         } catch (e: Exception) {
             throw BrickException(
