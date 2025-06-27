@@ -97,4 +97,6 @@
     <string name="developer">Programista</string>
     <string name="general">Ogólne</string>
     <string name="settings_date_pattern_dialog_desc">Wzór daty będzie przetworzony jako:\n[color=primary]%1$s[/color]</string>
+    <string name="webui_config_kill_shell_when_background">Zakończ powłokę</string>
+    <string name="webui_config_kill_shell_when_background_desc">Zatrzymuje powłokę, gdy WebUI przechodzi w tło. Zapobiega to wykonywaniu kodu w tle.</string>
 </resources>
