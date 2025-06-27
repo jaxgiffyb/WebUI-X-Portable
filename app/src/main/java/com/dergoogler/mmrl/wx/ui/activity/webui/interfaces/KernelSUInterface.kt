@@ -4,13 +4,15 @@ import android.text.TextUtils
 import android.view.Window
 import android.webkit.JavascriptInterface
 import android.widget.Toast
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import com.dergoogler.mmrl.webui.interfaces.WXInterface
 import com.dergoogler.mmrl.webui.interfaces.WXOptions
-import com.dergoogler.mmrl.wx.util.createRootShell
-import com.dergoogler.mmrl.wx.util.withNewRootShell
 import com.topjohnwu.superuser.CallbackList
+import com.topjohnwu.superuser.Shell
 import com.topjohnwu.superuser.ShellUtils
 import com.topjohnwu.superuser.internal.WaitRunnable
 import kotlinx.coroutines.Dispatchers
@@ -28,7 +30,17 @@ class KernelSUInterface(
     // Defined a logging tag for debugging
     override var tag: String = "KernelSUInterface"
 
+
     private val commands = if (options.platform.isNonRoot) arrayOf("sh") else arrayOf("su")
+
+    private fun createRootShell(): Shell {
+        Shell.enableVerboseLogging = options.debug
+        val builder = Shell.Builder.create()
+        builder.setFlags(Shell.FLAG_MOUNT_MASTER)
+        return builder.build(*commands)
+    }
+
+    var shell by mutableStateOf(createRootShell())
 
     @JavascriptInterface
     fun mmrl(): Boolean {
@@ -64,11 +76,7 @@ class KernelSUInterface(
 
     @JavascriptInterface
     fun exec(cmd: String): String {
-        return withNewRootShell(
-            globalMnt = true,
-            debug = options.debug,
-            commands = commands
-        ) { ShellUtils.fastCmd(this, cmd) }
+        return shell.use { ShellUtils.fastCmd(it, cmd) }
     }
 
     @JavascriptInterface
@@ -104,12 +112,8 @@ class KernelSUInterface(
         finalCommand.append(cmd)
 
         scope.launch(Dispatchers.IO) {
-            val result = withNewRootShell(
-                globalMnt = true,
-                debug = this@KernelSUInterface.options.debug,
-                commands = commands
-            ) {
-                newJob().add(finalCommand.toString()).to(ArrayList(), ArrayList()).exec()
+            val result = shell.use {
+                it.newJob().add(finalCommand.toString()).to(ArrayList(), ArrayList()).exec()
             }
             val stdout = result.out.joinToString(separator = "\n")
             val stderr = result.err.joinToString(separator = "\n")
@@ -153,12 +157,6 @@ class KernelSUInterface(
         } else {
             finalCommand.append(command)
         }
-
-        val shell = createRootShell(
-            globalMnt = true,
-            debug = this@KernelSUInterface.options.debug,
-            commands = commands
-        )
 
         val emitData = fun(name: String, data: String) {
             val jsCode =
@@ -209,6 +207,31 @@ class KernelSUInterface(
             }.whenComplete { _, _ ->
                 runJsCatching { shell.close() }
             }
+        }
+    }
+
+    override fun onActivityStop() {
+        super.onActivityStop()
+
+        // let the developer decide if it should be killed
+        if (!config.killShellWhenBackground) return
+
+        // kill shell once it moves to the background
+        if (shell.isAlive) {
+            shell.close()
+            return
+        }
+    }
+
+    override fun onActivityResume() {
+        super.onActivityResume()
+
+        if (!config.killShellWhenBackground) return
+
+        // create a new shell if it isn't alive
+        if (!shell.isAlive) {
+            shell = createRootShell()
+            return
         }
     }
 }

@@ -99,29 +99,6 @@ fun Platform.toWorkingMode() = when (this) {
     else -> throw BrickException("Unsupported Platform")
 }
 
-
-inline fun <T> withNewRootShell(
-    globalMnt: Boolean = false,
-    debug: Boolean = false,
-    commands: Array<String> = arrayOf("su"),
-    block: Shell.() -> T,
-): T {
-    return createRootShell(globalMnt, debug, commands).use(block)
-}
-
-fun createRootShell(
-    globalMnt: Boolean = false,
-    debug: Boolean = false,
-    commands: Array<String> = arrayOf("su"),
-): Shell {
-    Shell.enableVerboseLogging = debug
-    val builder = Shell.Builder.create()
-    if (globalMnt) {
-        builder.setFlags(Shell.FLAG_MOUNT_MASTER)
-    }
-    return builder.build(*commands)
-}
-
 private suspend fun init(
     platform: Platform,
     context: Context,

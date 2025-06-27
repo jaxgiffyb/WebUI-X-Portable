@@ -158,6 +158,7 @@ data class WebUIConfig(
     val historyFallbackFile: String = "index.html",
     val autoStatusBarsStyle: Boolean = true,
     val dexFiles: List<WebUIConfigDexFile> = emptyList(),
+    val killShellWhenBackground: Boolean = true,
 ) {
     val hasRootPathPermission get() = WebUIPermissions.WX_ROOT_PATH in permissions
 
