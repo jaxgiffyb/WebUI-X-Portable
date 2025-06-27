@@ -199,7 +199,8 @@ open class WXActivity : ComponentActivity() {
                         WXEventHandler(WXEvent.WX_ON_BACK, null)
                     )
                     true -> handleNativeBack()
-                    false, null -> finish()
+                    null -> handleNativeBack()
+                    false -> finish()
                     else -> finish()
                 }
             }
