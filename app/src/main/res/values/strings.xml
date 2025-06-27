@@ -98,4 +98,6 @@
     <string name="permission_wl_desc">use WebUI Legacy in WebUI X: Portable</string>
     <string name="general">General</string>
     <string name="developer">Developer</string>
+    <string name="webui_config_kill_shell_when_background">Kill Shell</string>
+    <string name="webui_config_kill_shell_when_background_desc">Kill the Shell when the WebUI moves into the background. Prevent\'s background code execution.</string>
 </resources>

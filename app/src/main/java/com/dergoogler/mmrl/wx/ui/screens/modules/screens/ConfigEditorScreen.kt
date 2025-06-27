@@ -330,6 +330,15 @@ fun ConfigEditorScreen(module: LocalModule) {
                     }
                 )
 
+                ListSwitchItem(
+                    title = stringResource(R.string.webui_config_kill_shell_when_background),
+                    desc = stringResource(R.string.webui_config_kill_shell_when_background_desc),
+                    checked = config.getBoolProp("killShellWhenBackground", true),
+                    onChange = { isChecked ->
+                        config("killShellWhenBackground", isChecked)
+                    }
+                )
+
                 ListEditTextSwitchItem(
                     title = stringResource(R.string.webui_config_history_fallback_title),
                     desc = stringResource(R.string.webui_config_history_fallback_desc),
