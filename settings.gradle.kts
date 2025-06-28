@@ -24,4 +24,4 @@ include(
     ":app",
     ":webui"
 )
- 
+include(":helper")

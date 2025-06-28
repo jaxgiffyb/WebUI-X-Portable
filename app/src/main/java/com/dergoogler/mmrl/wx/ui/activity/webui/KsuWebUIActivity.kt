@@ -21,6 +21,7 @@ import com.dergoogler.mmrl.webui.view.WebUIView
 import com.dergoogler.mmrl.webui.wxAssetLoader
 import com.dergoogler.mmrl.wx.ui.activity.webui.interfaces.KernelSUInterface
 import com.dergoogler.mmrl.wx.util.BaseActivity
+import com.dergoogler.mmrl.wx.util.initPlatform
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 
@@ -29,6 +30,7 @@ class KsuWebUIActivity : BaseActivity() {
     private val userPrefs get() = runBlocking { userPreferencesRepository.data.first() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        initPlatform(userPrefs)
 
         // Enable edge to edge
         enableEdgeToEdge()
