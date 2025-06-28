@@ -91,8 +91,10 @@ data class WebUIConfigRequire(
 
 @JsonClass(generateAdapter = false)
 enum class DexSourceType {
-    @Json(name = "dex") DEX,
-    @Json(name = "apk") APK
+    @Json(name = "dex")
+    DEX,
+    @Json(name = "apk")
+    APK
 }
 
 private val interfaceCache = ConcurrentHashMap<String, JavaScriptInterface<out WXInterface>>()
@@ -102,6 +104,7 @@ data class WebUIConfigDexFile(
     val type: DexSourceType = DexSourceType.DEX,
     val path: String? = null,
     val className: String? = null,
+    val cache: Boolean = true,
 ) {
     private companion object {
         const val TAG = "WebUIConfigDexFile"
@@ -124,8 +127,10 @@ data class WebUIConfigDexFile(
         val currentClassName = className ?: return null
         val currentPath = path ?: return null
 
-        // 1. Check cache first for immediate retrieval.
-        interfaceCache[currentClassName]?.let { return it }
+        if (cache) {
+            // 1. Check cache first for immediate retrieval.
+            interfaceCache[currentClassName]?.let { return it }
+        }
 
         return try {
             // 2. Create the appropriate class loader.
@@ -161,7 +166,11 @@ data class WebUIConfigDexFile(
     /**
      * Creates a ClassLoader for a standalone .dex file.
      */
-    private fun createDexLoader(context: Context, modId: ModId, dexPath: String): BaseDexClassLoader? {
+    private fun createDexLoader(
+        context: Context,
+        modId: ModId,
+        dexPath: String,
+    ): BaseDexClassLoader? {
         val file = SuFile(modId.webrootDir, dexPath)
 
         if (!file.isFile || file.extension != "dex") {
