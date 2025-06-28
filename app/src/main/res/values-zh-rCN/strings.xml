@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">WebUI X</string>
     <string name="missing_mod_id">缺少模块 ID</string>
@@ -35,7 +36,6 @@
     <string name="modules_empty">没有找到模块</string>
     <string name="search_empty">搜索无结果</string>
     <string name="search_placeholder">搜索……</string>
-
     <string name="menu_advanced_menu">高级菜单</string>
     <string name="menu_sort_mode">排序方式</string>
     <string name="menu_sort_option_name">按名称</string>
@@ -61,5 +61,4 @@
     <string name="permission_wl_label">WebUI</string>
     <string name="permission_wl_desc">允许其他应用程序在 WebUI 中使用 WebUI X: Portable</string>
     <string name="notification_platform_service">工作方式服务</string>
-
 </resources>
