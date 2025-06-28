@@ -2,6 +2,7 @@ package com.dergoogler.mmrl.webui.model
 
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
 import android.graphics.BitmapFactory
@@ -9,8 +10,11 @@ import android.graphics.drawable.Icon
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.Immutable
+import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.content.LocalModule
 import com.dergoogler.mmrl.platform.file.SuFile
+import com.dergoogler.mmrl.platform.hiddenApi.HiddenPackageManager
+import com.dergoogler.mmrl.platform.hiddenApi.HiddenUserManager
 import com.dergoogler.mmrl.platform.model.ModId
 import com.dergoogler.mmrl.platform.model.ModId.Companion.putModId
 import com.dergoogler.mmrl.platform.model.ModId.Companion.webrootDir
@@ -18,10 +22,14 @@ import com.dergoogler.mmrl.webui.R
 import com.dergoogler.mmrl.webui.activity.WXActivity
 import com.dergoogler.mmrl.webui.interfaces.WXInterface
 import com.dergoogler.mmrl.webui.moshi
-import com.squareup.moshi.JsonClass
 import com.squareup.moshi.Json
+import com.squareup.moshi.JsonClass
+import dalvik.system.BaseDexClassLoader
+import dalvik.system.DexClassLoader
 import dalvik.system.InMemoryDexClassLoader
 import java.nio.ByteBuffer
+import java.util.concurrent.ConcurrentHashMap
+
 
 object WebUIPermissions {
     const val PLUGIN_DEX_LOADER = "webui.permission.PLUGIN_DEX_LOADER"
@@ -81,10 +89,17 @@ data class WebUIConfigRequire(
     val version: WebUIConfigRequireVersion = WebUIConfigRequireVersion(),
 )
 
-private val interfaceCache = mutableMapOf<String, JavaScriptInterface<out WXInterface>>()
+@JsonClass(generateAdapter = false)
+enum class DexSourceType {
+    @Json(name = "dex") DEX,
+    @Json(name = "apk") APK
+}
+
+private val interfaceCache = ConcurrentHashMap<String, JavaScriptInterface<out WXInterface>>()
 
 @JsonClass(generateAdapter = true)
 data class WebUIConfigDexFile(
+    val type: DexSourceType = DexSourceType.DEX,
     val path: String? = null,
     val className: String? = null,
 ) {
@@ -92,50 +107,90 @@ data class WebUIConfigDexFile(
         const val TAG = "WebUIConfigDexFile"
     }
 
-    fun getInterface(context: Context, modId: ModId): JavaScriptInterface<out WXInterface>? {
-        if (className in interfaceCache) {
-            return interfaceCache[className]
-        }
+    /**
+     * Loads and instantiates a JavaScript interface from a DEX or APK file.
+     *
+     * @param context The Android Context.
+     * @param modId The ID of the mod providing the web root.
+     * @param interfaceCache A thread-safe cache to store and retrieve loaded interfaces,
+     * preventing redundant and expensive file operations.
+     * @return The instantiated JavaScriptInterface, or null if loading fails.
+     */
+    fun getInterface(
+        context: Context,
+        modId: ModId,
+    ): JavaScriptInterface<out WXInterface>? {
+        // Use guard clauses for cleaner validation at the start.
+        val currentClassName = className ?: return null
+        val currentPath = path ?: return null
 
-        if (path == null || className == null) {
-            return null
-        }
+        // 1. Check cache first for immediate retrieval.
+        interfaceCache[currentClassName]?.let { return it }
 
-        val file = SuFile(modId.webrootDir, path)
+        return try {
+            // 2. Create the appropriate class loader.
+            val loader = when (type) {
+                DexSourceType.DEX -> createDexLoader(context, modId, currentPath)
+                DexSourceType.APK -> createApkLoader(context, currentPath)
+            } ?: return null // Return null if loader creation failed.
 
-        if (!file.isFile) {
-            return null
-        }
-
-        if (file.extension != "dex") {
-            return null
-        }
-
-        try {
-            val dexFileParcel = file.readBytes()
-            val loader = InMemoryDexClassLoader(
-                ByteBuffer.wrap(dexFileParcel), context.classLoader
-            )
-
-            val rawClass = loader.loadClass(className)
+            // 3. Load the class and create an instance.
+            val rawClass = loader.loadClass(currentClassName)
             if (!WXInterface::class.java.isAssignableFrom(rawClass)) {
-                Log.e(TAG, "Loaded class $className does not implement WXInterface")
+                Log.e(TAG, "Loaded class $currentClassName does not implement WXInterface")
                 return null
             }
 
-            @Suppress("UNCHECKED_CAST") val clazz = rawClass as Class<out WXInterface>
+            @Suppress("UNCHECKED_CAST")
+            val clazz = rawClass as Class<out WXInterface>
             val instance = JavaScriptInterface(clazz)
 
-            interfaceCache[className] = instance
-            return instance
+            // 4. Cache the new instance and return it.
+            interfaceCache.putIfAbsent(currentClassName, instance)
+            instance
         } catch (e: ClassNotFoundException) {
-            Log.e(TAG, "Class $className not found in dex file ${file.path}", e)
-            return null
+            Log.e(TAG, "Class $currentClassName not found in path: $currentPath", e)
+            null
         } catch (e: Exception) {
-            Log.e(
-                TAG, "Error instantiating class $className from dex file ${file.path}", e
-            )
+            // Generic catch for any other instantiation or loading errors.
+            Log.e(TAG, "Error loading class $currentClassName from path: $currentPath", e)
+            null
+        }
+    }
+
+    /**
+     * Creates a ClassLoader for a standalone .dex file.
+     */
+    private fun createDexLoader(context: Context, modId: ModId, dexPath: String): BaseDexClassLoader? {
+        val file = SuFile(modId.webrootDir, dexPath)
+
+        if (!file.isFile || file.extension != "dex") {
+            Log.e(TAG, "Provided path is not a valid .dex file: ${file.path}")
             return null
+        }
+
+        // Using InMemoryDexClassLoader is efficient if DEX files are not excessively large.
+        val dexFileBytes = file.readBytes()
+        return InMemoryDexClassLoader(ByteBuffer.wrap(dexFileBytes), context.classLoader)
+    }
+
+    /**
+     * Creates a ClassLoader for a class within an installed APK.
+     */
+    private fun createApkLoader(context: Context, packageName: String): BaseDexClassLoader? {
+        return try {
+            val pm: HiddenPackageManager = PlatformManager.packageManager
+            val um: HiddenUserManager = PlatformManager.userManager
+            val appInfo = pm.getApplicationInfo(packageName, um.myUserId, 0)
+            val apkPath = appInfo.sourceDir
+
+            val optimizedDir = context.getDir("dex_opt", Context.MODE_PRIVATE).absolutePath
+
+            DexClassLoader(apkPath, optimizedDir, null, context.classLoader)
+        } catch (e: PackageManager.NameNotFoundException) {
+            // Use consistent logging instead of printStackTrace.
+            Log.e(TAG, "Could not find package: $packageName", e)
+            null
         }
     }
 }
