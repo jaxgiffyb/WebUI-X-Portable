@@ -1,5 +1,5 @@
 [versions]
-mmrl = "52140b4c92"
+mmrl = "7d178829fe"
 adaptiveAndroid = "1.1.0-rc01"
 androidGradlePlugin = "8.9.1"
 androidxActivity = "1.9.3"
@@ -62,6 +62,7 @@ mmrl-platform = { group = "com.github.MMRLApp.MMRL", name = "platform", version.
 mmrl-hiddenApi = { group = "com.github.MMRLApp.MMRL", name = "hidden-api", version.ref = "mmrl" }
 mmrl-ui = { group = "com.github.MMRLApp.MMRL", name = "ui", version.ref = "mmrl" }
 mmrl-ext = { group = "com.github.MMRLApp.MMRL", name = "ext", version.ref = "mmrl" }
+mmrl-compat = { group = "com.github.MMRLApp.MMRL", name = "compat", version.ref = "mmrl" }
 mmrl-datastore = { group = "com.github.MMRLApp.MMRL", name = "datastore", version.ref = "mmrl" }
 androidx-swiperefreshlayout = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefreshlayout" }
 androidx-adaptive = { module = "androidx.compose.material3.adaptive:adaptive", version.ref = "adaptiveAndroid" }

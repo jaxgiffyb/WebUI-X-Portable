@@ -10,8 +10,8 @@ import androidx.core.app.ServiceCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.dergoogler.mmrl.platform.Platform
-import com.dergoogler.mmrl.platform.model.PlatformIntent.Companion.getPlatform
-import com.dergoogler.mmrl.platform.model.createPlatformIntent
+import com.dergoogler.mmrl.platform.Platform.Companion.createPlatformIntent
+import com.dergoogler.mmrl.platform.Platform.Companion.getPlatform
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.app.utils.NotificationUtils.CHANNEL_ID_PLATFORM
 import com.dergoogler.mmrl.wx.app.utils.NotificationUtils.GROUP_KEY_PLATFORM
@@ -41,7 +41,7 @@ class PlatformService : LifecycleService() {
         }
 
         lifecycleScope.launch {
-            isActive = initPlatform(baseContext, intent.getPlatform())
+            isActive = initPlatform(baseContext, intent.getPlatform() ?: return@launch)
         }
 
         return START_STICKY

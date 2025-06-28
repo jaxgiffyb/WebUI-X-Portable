@@ -9,7 +9,7 @@ import android.webkit.WebView
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
-import com.dergoogler.mmrl.ext.BuildCompat
+import com.dergoogler.mmrl.compat.BuildCompat
 import com.dergoogler.mmrl.ext.findActivity
 import com.dergoogler.mmrl.ext.nullply
 import com.dergoogler.mmrl.webui.client.WXChromeClient

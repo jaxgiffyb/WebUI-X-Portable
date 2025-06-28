@@ -45,6 +45,7 @@ dependencies {
     compileOnly(libs.mmrl.ext)
     compileOnly(libs.mmrl.ui)
     compileOnly(libs.mmrl.platform)
+    compileOnly(libs.mmrl.compat)
     compileOnly(libs.mmrl.hiddenApi)
     implementation(libs.libsu.core)
     implementation(libs.androidx.core.ktx)

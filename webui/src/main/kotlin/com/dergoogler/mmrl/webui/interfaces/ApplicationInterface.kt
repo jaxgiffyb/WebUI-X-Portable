@@ -5,7 +5,7 @@ import android.content.Intent
 import android.webkit.JavascriptInterface
 import androidx.annotation.Keep
 import androidx.core.content.pm.PackageInfoCompat
-import com.dergoogler.mmrl.webui.compat.MediaStoreCompat.getPathForUri
+import com.dergoogler.mmrl.compat.MediaStoreCompat.getPathForUri
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.webui.model.App
 import com.squareup.moshi.JsonClass

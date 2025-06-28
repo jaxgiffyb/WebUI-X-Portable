@@ -168,7 +168,9 @@ dependencies {
     implementation(libs.mmrl.ui)
     implementation(libs.mmrl.platform)
     implementation(libs.mmrl.datastore)
+    implementation(libs.mmrl.compat)
     compileOnly(libs.mmrl.hiddenApi)
+
     implementation(libs.libsu.core)
     implementation(libs.libsu.service)
     implementation(libs.libsu.io)

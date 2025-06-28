@@ -18,7 +18,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.toArgb
-import com.dergoogler.mmrl.ext.BuildCompat
+import com.dergoogler.mmrl.compat.BuildCompat
 import com.dergoogler.mmrl.ext.nullply
 import com.dergoogler.mmrl.platform.model.ModId
 import com.dergoogler.mmrl.platform.model.ModId.Companion.getModId

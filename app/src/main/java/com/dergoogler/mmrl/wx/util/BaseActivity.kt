@@ -16,8 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import com.dergoogler.mmrl.datastore.UserPreferencesRepository
 import com.dergoogler.mmrl.datastore.model.UserPreferences
 import com.dergoogler.mmrl.datastore.providable.LocalUserPreferences
-import com.dergoogler.mmrl.platform.Platform
-import com.dergoogler.mmrl.platform.model.PlatformIntent.Companion.getPlatform
+import com.dergoogler.mmrl.platform.Platform.Companion.getPlatform
 import com.dergoogler.mmrl.ui.providable.LocalNavController
 import com.dergoogler.mmrl.ui.theme.MMRLAppTheme
 import com.dergoogler.mmrl.wx.App.Companion.TAG
@@ -90,7 +89,7 @@ fun BaseActivity.setBaseContent(
 }
 
 fun ComponentActivity.initPlatform(userPreferences: UserPreferences) {
-    val platform = (intent.getPlatform() as Platform?) ?: userPreferences.workingMode.toPlatform()
+    val platform = intent.getPlatform() ?: userPreferences.workingMode.toPlatform()
 
     if (!PlatformService.isActive) {
         try {

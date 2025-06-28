@@ -4,8 +4,8 @@ import android.app.Service
 import android.content.Context
 import android.content.ServiceConnection
 import com.dergoogler.mmrl.platform.Platform
+import com.dergoogler.mmrl.platform.Platform.Companion.createPlatformIntent
 import com.dergoogler.mmrl.platform.model.IProvider
-import com.dergoogler.mmrl.platform.model.createPlatformIntent
 
 class NonRootProvider(
     private val context: Context,
