@@ -22,16 +22,15 @@ import com.dergoogler.mmrl.webui.wxAssetLoader
 import com.dergoogler.mmrl.wx.ui.activity.webui.interfaces.KernelSUInterface
 import com.dergoogler.mmrl.wx.util.BaseActivity
 import com.dergoogler.mmrl.wx.util.initPlatform
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 
 @SuppressLint("SetJavaScriptEnabled")
+@AndroidEntryPoint
 class KsuWebUIActivity : BaseActivity() {
-    private val userPrefs get() = runBlocking { userPreferencesRepository.data.first() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        initPlatform(userPrefs)
-
         // Enable edge to edge
         enableEdgeToEdge()
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -39,6 +38,10 @@ class KsuWebUIActivity : BaseActivity() {
         }
 
         super.onCreate(savedInstanceState)
+
+        val userPrefs = runBlocking { userPreferencesRepository.data.first() }
+
+        initPlatform(userPrefs)
 
         val modId = intent.getModId() ?: throw BrickException("Invalid Module ID")
 
