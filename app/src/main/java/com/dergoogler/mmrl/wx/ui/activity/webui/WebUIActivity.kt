@@ -44,12 +44,8 @@ class WebUIActivity : WXActivity() {
             return "WebUI X/$mmrlVersion (Linux; Android $osVersion; $deviceModel; $platform/$platformVersion)"
         }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        initPlatform(userPrefs)
-        super.onCreate(savedInstanceState)
-    }
-
     override fun onRender(savedInstanceState: Bundle?) {
+        initPlatform(userPrefs)
         super.onRender(savedInstanceState)
 
         val modId = this.modId ?: throw BrickException("modId cannot be null or empty")
