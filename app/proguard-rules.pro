@@ -1,6 +1,8 @@
 -verbose
 -optimizationpasses 5
 
+-dontobfuscate
+
 -dontwarn org.conscrypt.**
 -dontwarn kotlinx.serialization.**
 
@@ -47,7 +49,6 @@
 -dontwarn javax.lang.model.util.SimpleTypeVisitor8
 -dontwarn javax.lang.model.util.Types
 -dontwarn javax.tools.Diagnostic$Kind
-
 
 # MMRL:webui reflection
 -keep class com.dergoogler.mmrl.platform.model.ModId { *; }

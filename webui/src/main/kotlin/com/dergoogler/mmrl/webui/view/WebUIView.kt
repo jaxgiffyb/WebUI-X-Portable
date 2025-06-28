@@ -9,6 +9,7 @@ import android.view.ViewGroup.LayoutParams
 import android.webkit.WebMessage
 import android.webkit.WebView
 import android.widget.FrameLayout
+import androidx.annotation.Keep
 import androidx.annotation.UiThread
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.drawable.toDrawable
@@ -50,6 +51,7 @@ import kotlin.text.replace
  * @property interfaces A set of JavaScript interface names that have been added to this WebView.
  * @property console A [WXConsole] implementation for logging messages from the WebView.
  */
+@Keep
 @SuppressLint("ViewConstructor")
 open class WebUIView(
     protected val options: WebUIOptions,
@@ -159,6 +161,7 @@ open class WebUIView(
      *
      * @param type The type of the event.
      */
+    @Keep
     fun postWXEvent(type: WXEvent) =
         postWXEvent<WXEvent, Nothing>(type, null)
 
@@ -167,6 +170,7 @@ open class WebUIView(
      *
      * @param type The type of the event.
      */
+    @Keep
     fun postWXEvent(type: String) =
         postWXEvent<String, Nothing>(type, null)
 
@@ -177,6 +181,7 @@ open class WebUIView(
      * @param data The data to be sent with the event.
      * @param D The type of the data.
      */
+    @Keep
     fun <D : Any?> postWXEvent(type: WXEvent, data: D?) =
         postWXEvent<WXEvent, D>(type, data)
 
@@ -187,6 +192,7 @@ open class WebUIView(
      * @param data The data to be sent with the event.
      * @param D The type of the data.
      */
+    @Keep
     fun <D : Any?> postWXEvent(type: String, data: D?) =
         postWXEvent<String, D>(type, data)
 
@@ -199,6 +205,7 @@ open class WebUIView(
      * @param T The type of the event type.
      * @param D The type of the data.
      */
+    @Keep
     fun <T, D : Any?> postWXEvent(type: T, data: D?) =
         postWXEvent<T, D?>(WXEventHandler<T, D?>(type, data))
 
@@ -213,6 +220,7 @@ open class WebUIView(
      * @param T The type of the event type.
      * @param D The type of the data.
      */
+    @Keep
     fun <T, D : Any?> postWXEvent(event: WXEventHandler<T, D?>) {
         val activity = context.findActivity()
         if (activity == null) {
