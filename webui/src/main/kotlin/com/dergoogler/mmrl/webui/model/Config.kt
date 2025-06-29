@@ -7,6 +7,7 @@ import android.content.pm.ShortcutInfo
 import android.content.pm.ShortcutManager
 import android.graphics.BitmapFactory
 import android.graphics.drawable.Icon
+import android.os.Build
 import android.util.Log
 import android.widget.Toast
 import com.dergoogler.mmrl.platform.PlatformManager
@@ -198,12 +199,17 @@ data class WebUIConfigDexFile(
             val um: HiddenUserManager = PlatformManager.userManager
             val appInfo = pm.getApplicationInfo(packageName, um.myUserId, 0)
             val apkPath = appInfo.sourceDir
+            val nativeLibPath = appInfo.nativeLibraryDir
 
             val optimizedDir = context.getDir("dex_opt", Context.MODE_PRIVATE).absolutePath
 
-            DexClassLoader(apkPath, optimizedDir, null, context.classLoader)
+            DexClassLoader(
+                apkPath,
+                optimizedDir,
+                nativeLibPath,
+                context.classLoader
+            )
         } catch (e: PackageManager.NameNotFoundException) {
-            // Use consistent logging instead of printStackTrace.
             Log.e(TAG, "Could not find package: $packageName", e)
             null
         }

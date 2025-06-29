@@ -348,10 +348,11 @@ private fun AddBottomSheet(
     val classRegex = Regex("^[a-zA-Z_][a-zA-Z0-9_]*(\\.[a-zA-Z_][a-zA-Z0-9_]*)*$")
     val pathRegex = Regex("^(?!/|[a-zA-Z]:)[^:*?\"<>|]*\\.dex$")
 
-    val isPathValid =
-        path.isNotBlank() && (selectedType.value == DexSourceType.DEX && path.endsWith(".dex") && path.matches(
-            pathRegex
-        ))
+    val isPathValid = path.isNotBlank() && when (selectedType.value) {
+        DexSourceType.DEX -> path.endsWith(".dex") && path.matches(pathRegex)
+        else -> true
+    }
+
     val isClassNameValid =
         className.matches(classRegex)
     val isFormValid = isPathValid && isClassNameValid
