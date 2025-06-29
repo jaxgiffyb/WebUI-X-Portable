@@ -94,17 +94,17 @@ jobs:
           APK_PATH=$(find app/build/outputs/apk/${{ env.BUILD_TYPE_CASED }} -name "*.apk" | head -n 1)
           echo "APK_PATH=$APK_PATH" >> $GITHUB_OUTPUT
 
-      - name: Find mapping file
-        id: normal_mapping
-        run: |
-          MAPPING_PATH=$(find app/build/outputs/mapping/${{ env.BUILD_TYPE_CASED }} -name "mapping.txt" | head -n 1)
-          echo "MAPPING_PATH=$MAPPING_PATH" >> $GITHUB_OUTPUT
+      # - name: Find mapping file
+      #   id: normal_mapping
+      #   run: |
+      #     MAPPING_PATH=$(find app/build/outputs/mapping/${{ env.BUILD_TYPE_CASED }} -name "mapping.txt" | head -n 1)
+      #     echo "MAPPING_PATH=$MAPPING_PATH" >> $GITHUB_OUTPUT
 
-      - name: Upload normal mapping as artifact
-        uses: actions/upload-artifact@v4.6.2
-        with:
-          name: mapping
-          path: ${{ steps.normal_mapping.outputs.MAPPING_PATH }}
+      # - name: Upload normal mapping as artifact
+      #   uses: actions/upload-artifact@v4.6.2
+      #   with:
+      #     name: mapping
+      #     path: ${{ steps.normal_mapping.outputs.MAPPING_PATH }}
 
       - name: Upload normal apk as artifact
         if: success() && github.ref == 'refs/heads/master'
@@ -134,11 +134,11 @@ jobs:
           name: ${{ needs.build.outputs.release-name }}
           path: unspoofed-apk
 
-      - name: Download Mappings
-        uses: actions/download-artifact@v4
-        with:
-          name: mapping
-          path: mapping
+      # - name: Download Mappings
+      #   uses: actions/download-artifact@v4
+      #   with:
+      #     name: mapping
+      #     path: mapping
 
       - name: Find normal APK
         id: find_normal_apk
@@ -146,11 +146,11 @@ jobs:
           APK_PATH=$(find unspoofed-apk -name "*.apk" | head -n 1)
           echo "APK_PATH=$APK_PATH" >> $GITHUB_OUTPUT
 
-      - name: Find normal mapping file
-        id: normal_mapping
-        run: |
-          MAPPING_PATH=$(find mapping -name "mapping.txt" | head -n 1)
-          echo "MAPPING_PATH=$MAPPING_PATH" >> $GITHUB_OUTPUT
+      # - name: Find normal mapping file
+      #   id: normal_mapping
+      #   run: |
+      #     MAPPING_PATH=$(find mapping -name "mapping.txt" | head -n 1)
+      #     echo "MAPPING_PATH=$MAPPING_PATH" >> $GITHUB_OUTPUT
 
       - name: Get commit info and build timestamp
         id: meta
@@ -186,9 +186,6 @@ jobs:
             **What's new?**
 
             ${{ inputs.message }}
-
-            This release was released on the following platforms:
-            ${{ env.PLATFORMS }}
             
             Type: ${{ env.BUILD_TYPE_CASED }}
             [Workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
@@ -244,16 +241,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         
-      - name: Upload normal mapping to GitHub Release
-        if: steps.check_release.outputs.exists == 'false' && github.event.inputs.send_github == 'true'
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ steps.normal_mapping.outputs.MAPPING_PATH }}
-          asset_name: mapping.txt
-          asset_content_type: text/plain
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Upload normal mapping to GitHub Release
+      #   if: steps.check_release.outputs.exists == 'false' && github.event.inputs.send_github == 'true'
+      #   uses: actions/upload-release-asset@v1
+      #   with:
+      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #     asset_path: ${{ steps.normal_mapping.outputs.MAPPING_PATH }}
+      #     asset_name: mapping.txt
+      #     asset_content_type: text/plain
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   playstore-build:
     name: Build for Google Play Store and release
