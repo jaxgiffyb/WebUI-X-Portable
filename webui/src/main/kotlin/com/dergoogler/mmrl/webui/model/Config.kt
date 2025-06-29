@@ -16,6 +16,7 @@ import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.platform.hiddenApi.HiddenPackageManager
 import com.dergoogler.mmrl.platform.hiddenApi.HiddenUserManager
 import com.dergoogler.mmrl.platform.model.ModId
+import com.dergoogler.mmrl.platform.model.ModId.Companion.moduleConfigDir
 import com.dergoogler.mmrl.platform.model.ModId.Companion.putModId
 import com.dergoogler.mmrl.platform.model.ModId.Companion.webrootDir
 import com.dergoogler.mmrl.webui.R
@@ -24,6 +25,7 @@ import com.dergoogler.mmrl.webui.interfaces.WXInterface
 import com.dergoogler.mmrl.webui.moshi
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
+import com.squareup.moshi.Types
 import dalvik.system.BaseDexClassLoader
 import dalvik.system.DexClassLoader
 import dalvik.system.InMemoryDexClassLoader
@@ -308,17 +310,72 @@ data class WebUIConfig(
             get() {
                 val config = WebUIConfig(this)
 
-                val configFile =
+                val configFileInWebRootDir =
                     webrootDir.fromPaths("config.json", "config.mmrl.json") ?: return config
 
-                val jsonString = configFile.readText()
-                val jsonAdapter = moshi.adapter(WebUIConfig::class.java)
+                val configFileInConfigDir =
+                    moduleConfigDir.fromPaths("config.json") ?: return config
 
-                val json = jsonAdapter.fromJson(jsonString)
+                val jsonStringWebRoot = configFileInWebRootDir.readText()
+                val jsonStringConfig = configFileInConfigDir.readText()
 
-                return (json ?: config).copy(modId = this)
+                val merged = jsonStringWebRoot.merge(jsonStringConfig) ?: return config
+
+                return merged.copy(modId = this)
             }
 
         val LocalModule.webUiConfig get() = id.asWebUIConfig
+        
+        private val mapType = Types.newParameterizedType(Map::class.java, String::class.java, Any::class.java)
+        private val mapAdapter = moshi.adapter<Map<String, Any?>>(mapType)
+        private val jsonAdapter = moshi.adapter(WebUIConfig::class.java)
+
+        private fun String.merge(b: String): WebUIConfig? {
+            val aMap = mapAdapter.fromJson(this)
+            val bMap = mapAdapter.fromJson(b)
+
+            if (aMap == null || bMap == null) {
+                return null
+            }
+
+            val mergedMap = mergeMaps(aMap, bMap)
+            val mergedJson = mapAdapter.toJson(mergedMap)
+
+            return jsonAdapter.fromJson(mergedJson)!!
+        }
+
+        private fun WebUIConfig.merge(b: WebUIConfig): WebUIConfig? {
+            val aJson = jsonAdapter.toJson(this)
+            val bJson = jsonAdapter.toJson(b)
+
+            return aJson.merge(bJson)
+        }
+
+        private fun mergeMaps(a: Map<String, Any?>, b: Map<String, Any?>): Map<String, Any?> {
+            val result = mutableMapOf<String, Any?>()
+            val keys = a.keys + b.keys
+
+            for (key in keys) {
+                val aVal = a[key]
+                val bVal = b[key]
+
+                val aMapVal = aVal.asStringMap()
+                val bMapVal = bVal.asStringMap()
+
+                result[key] = when {
+                    aMapVal != null && bMapVal != null -> mergeMaps(aMapVal, bMapVal)
+                    bVal != null -> bVal // b overrides a
+                    else -> aVal
+                }
+            }
+            return result
+        }
+
+        private fun Any?.asStringMap(): Map<String, Any?>? {
+            return (this as? Map<*, *>)?.mapNotNull {
+                val key = it.key as? String ?: return@mapNotNull null
+                key to it.value
+            }?.toMap()
+        }
     }
 }
