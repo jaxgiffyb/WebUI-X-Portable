@@ -19,4 +19,4 @@
 
 Get involved with WebUI X: Portable by translating it into your language!
 
-[![Translation status](https://hosted.weblate.org/widget/mmrl/webui-x-portable/multi-auto.svg)](https://hosted.weblate.org/engage/mmrl/)
+[![Translation status](https://hosted.weblate.org/widget/mmrlapp/wxp-main/multi-auto.svg)](https://hosted.weblate.org/engage/mmrlapp/)
