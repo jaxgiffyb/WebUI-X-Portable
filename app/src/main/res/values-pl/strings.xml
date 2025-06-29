@@ -99,4 +99,14 @@
     <string name="settings_date_pattern_dialog_desc">Wzór daty będzie przetworzony jako:\n[color=primary]%1$s[/color]</string>
     <string name="webui_config_kill_shell_when_background">Zakończ powłokę</string>
     <string name="webui_config_kill_shell_when_background_desc">Zatrzymuje powłokę, gdy WebUI przechodzi w tło. Zapobiega to wykonywaniu kodu w tle.</string>
+    <string name="cache">Pamięć podręczna</string>
+    <string name="no">Nie</string>
+    <string name="yes">Tak</string>
+    <string name="dex_source_type_dex">Wykonywalny Dalvik</string>
+    <string name="dex_source_type_apk">Pakiet Androida</string>
+    <string name="plugin_type">Rodzaj wtyczki</string>
+    <string name="dex_source_type_dex_desc">Ładuje nieprzetworzone pliki kodu bajtowego dex dla lekkich wtyczek kodu.</string>
+    <string name="dex_source_type_apk_desc">Ładuje pełne pliki APK jako modułowe wtyczki z zasobami.</string>
+    <string name="plugins">Wtyczki</string>
+    <string name="plugins_desc">Rozszerz WebUI, aby dopasować go do swoich potrzeb.</string>
 </resources>
