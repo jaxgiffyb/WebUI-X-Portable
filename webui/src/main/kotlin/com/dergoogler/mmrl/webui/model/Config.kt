@@ -344,6 +344,7 @@ data class WebUIConfig(
                 val moduleConfigConfig = SuFile(moduleConfigDir, "config.webroot.json")
 
                 if (!moduleConfigConfig.exists()) {
+                    moduleConfigDir.mkdirs()
                     moduleConfigConfig.createNewFile()
                     moduleConfigConfig.writeText("{}")
                 }
