@@ -1,6 +1,7 @@
 package com.dergoogler.mmrl.wx.ui.screens.modules.screens
 
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -24,6 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,6 +38,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dergoogler.mmrl.ext.moshi.moshi
 import com.dergoogler.mmrl.ext.none
 import com.dergoogler.mmrl.ext.nullable
@@ -43,6 +46,7 @@ import com.dergoogler.mmrl.ext.shareFile
 import com.dergoogler.mmrl.ext.shareText
 import com.dergoogler.mmrl.platform.content.LocalModule
 import com.dergoogler.mmrl.platform.file.SuFile
+import com.dergoogler.mmrl.platform.model.ModId.Companion.moduleConfigDir
 import com.dergoogler.mmrl.platform.model.ModId.Companion.moduleDir
 import com.dergoogler.mmrl.platform.model.ModId.Companion.webrootDir
 import com.dergoogler.mmrl.ui.component.BottomSheet
@@ -57,6 +61,9 @@ import com.dergoogler.mmrl.ui.component.listItem.ListItemDefaults
 import com.dergoogler.mmrl.ui.component.listItem.ListRadioCheckItem
 import com.dergoogler.mmrl.ui.component.listItem.ListSwitchItem
 import com.dergoogler.mmrl.ui.providable.LocalNavController
+import com.dergoogler.mmrl.webui.model.MutableConfig
+import com.dergoogler.mmrl.webui.model.WebUIConfig
+import com.dergoogler.mmrl.webui.model.WebUIConfig.Companion.asWebUIConfigFlow
 import com.dergoogler.mmrl.webui.model.WebUIConfigDexFile
 import com.dergoogler.mmrl.wx.R
 import com.dergoogler.mmrl.wx.util.getBoolProp
@@ -93,89 +100,63 @@ fun ConfigEditorScreen(module: LocalModule) {
     val coroutineScope = rememberCoroutineScope()
     val modId = module.id
 
-    val webuiConfigFile: SuFile = remember {
-        var wfile = modId.webrootDir.fromPaths("config.json", "config.mmrl.json")
-        if (wfile == null) {
-            wfile = SuFile(modId.webrootDir, "config.json")
-            wfile.writeText("{}")
-        }
-        wfile
-    }
+    val stableFlow = remember(modId) { modId.asWebUIConfigFlow }
+    val config by stableFlow.collectAsStateWithLifecycle(WebUIConfig(modId))
 
-    val moduleConfigFile: SuFile = remember {
-        var mfile = modId.moduleDir.fromPaths("config.json", "config.mmrl.json")
-        if (mfile == null) {
-            mfile = SuFile(modId.moduleDir, "config.json")
-            mfile.writeText("{}")
-        }
-        mfile
-    }
+//
+//    val moduleConfigFile: SuFile = remember {
+//        var mfile = modId.moduleDir.fromPaths("config.module.json")
+//        if (mfile == null) {
+//            mfile = SuFile(modId.moduleDir, "config.module.json")
+//            mfile.writeText("{}")
+//        }
+//        mfile
+//    }
 
     var exportBottomSheet by remember { mutableStateOf(false) }
     if (exportBottomSheet) ExportBottomSheet(
         onClose = { exportBottomSheet = false },
         onModuleExport = {
-            context.shareText(moduleConfigFile.readText())
+//            context.shareText(moduleConfigFile.readText())
         },
         onConfigExport = {
-            context.shareText(webuiConfigFile.readText())
+            context.shareText(config.toJson())
         }
     )
 
+//    var moduleConfigMap by remember { mutableStateOf<Map<String, Any>?>(null) }
 
-    var webuiConfigMap by remember { mutableStateOf<Map<String, Any>?>(null) }
-    var moduleConfigMap by remember { mutableStateOf<Map<String, Any>?>(null) }
 
-    LaunchedEffect(webuiConfigFile) {
+//    LaunchedEffect(moduleConfigFile) {
+//        coroutineScope.launch {
+//            moduleConfigMap = try {
+//                mapAdapter.fromJson(moduleConfigFile.readText()) ?: emptyMap()
+//            } catch (e: Exception) {
+//                emptyMap()
+//            }
+//        }
+//    }
+
+    fun slave(builderAction: MutableConfig<Any?>.() -> Unit) {
         coroutineScope.launch {
-            webuiConfigMap = try {
-                mapAdapter.fromJson(webuiConfigFile.readText()) ?: emptyMap()
-            } catch (e: Exception) {
-                emptyMap()
-            }
+            config.save(builderAction)
         }
     }
 
-
-    LaunchedEffect(moduleConfigFile) {
-        coroutineScope.launch {
-            moduleConfigMap = try {
-                mapAdapter.fromJson(moduleConfigFile.readText()) ?: emptyMap()
-            } catch (e: Exception) {
-                emptyMap()
-            }
-        }
-    }
-
-    fun config(key: String, value: Any) {
-        val currentConfig = webuiConfigMap ?: return
-
-        val updatedConfig = currentConfig.toMutableMap().apply {
-            this[key] = value
-        }
-
-        webuiConfigMap = updatedConfig
-
-        coroutineScope.launch {
-            val json = mapAdapter.toJson(updatedConfig)
-            webuiConfigFile.writeText(json)
-        }
-    }
-
-    fun module(key: String, value: Any) {
-        val currentConfig = moduleConfigMap ?: return
-
-        val updatedConfig = currentConfig.toMutableMap().apply {
-            this[key] = value
-        }
-
-        moduleConfigMap = updatedConfig
-
-        coroutineScope.launch {
-            val json = mapAdapter.toJson(updatedConfig)
-            moduleConfigFile.writeText(json)
-        }
-    }
+//    fun module(key: String, value: Any) {
+//        val currentConfig = moduleConfigMap ?: return
+//
+//        val updatedConfig = currentConfig.toMutableMap().apply {
+//            this[key] = value
+//        }
+//
+//        moduleConfigMap = updatedConfig
+//
+//        coroutineScope.launch {
+//            val json = mapAdapter.toJson(updatedConfig)
+//            moduleConfigFile.writeText(json)
+//        }
+//    }
 
     Scaffold(
         topBar = {
@@ -206,14 +187,16 @@ fun ConfigEditorScreen(module: LocalModule) {
         ) {
             ListHeader(title = stringResource(R.string.webui_config))
 
-            webuiConfigMap.nullable { config ->
-                val title = config.getPropOrNull<String?>("title")
+            config.nullable { c ->
+
+
+                Log.d("ConfigEditorScreen", "ConfigEditorScreen: $c")
 
                 ListEditTextItem(
                     title = stringResource(R.string.webui_config_title_title),
-                    desc = title ?: stringResource(R.string.webui_config_title_desc),
+                    desc = c.title ?: stringResource(R.string.webui_config_title_desc),
                     itemTextStyle = ListItemDefaults.itemStyle.apply {
-                        if (title == null) {
+                        if (c.title == null) {
                             copy(
                                 descTextStyle = MaterialTheme.typography.bodyMedium.copy(
                                     fontStyle = FontStyle.Italic
@@ -221,19 +204,19 @@ fun ConfigEditorScreen(module: LocalModule) {
                             )
                         }
                     },
-                    value = title ?: "",
+                    value = c.title ?: "",
                     onConfirm = {
-                        config("title", it)
+                        slave {
+                            "title" change it
+                        }
                     }
                 )
 
-                val icon = config.getPropOrNull<String?>("icon")
-
                 ListEditTextItem(
                     title = stringResource(R.string.webui_config_icon_title),
-                    desc = icon ?: stringResource(R.string.webui_config_icon_desc),
+                    desc = c.icon ?: stringResource(R.string.webui_config_icon_desc),
                     itemTextStyle = ListItemDefaults.itemStyle.apply {
-                        if (icon == null) {
+                        if (c.icon == null) {
                             copy(
                                 descTextStyle = MaterialTheme.typography.bodyMedium.copy(
                                     fontStyle = FontStyle.Italic
@@ -241,29 +224,35 @@ fun ConfigEditorScreen(module: LocalModule) {
                             )
                         }
                     },
-                    value = icon ?: "",
+                    value = c.icon ?: "",
                     onConfirm = {
-                        config("icon", it)
+                        slave {
+                            "icon" change it
+                        }
                     }
                 )
 
                 ListSwitchItem(
                     title = stringResource(R.string.webui_config_exit_confirm_title),
                     desc = stringResource(R.string.webui_config_exit_confirm_desc),
-                    checked = config.getBoolProp("exitConfirm", true),
+                    checked = c.exitConfirm,
                     onChange = { isChecked ->
-                        config("exitConfirm", isChecked)
+                        slave {
+                            "exitConfirm" change isChecked
+                        }
                     }
                 )
 
-                val backHandler = config.getBoolProp("backHandler", true)
+                val backHandler = c.backHandler ?: true
 
                 ListSwitchItem(
                     title = stringResource(R.string.webui_config_back_handler_title),
                     desc = stringResource(R.string.webui_config_back_handler_desc),
                     checked = backHandler,
                     onChange = { isChecked ->
-                        config("backHandler", isChecked)
+                        slave {
+                            "backHandler" change isChecked
+                        }
                     },
                 )
 
@@ -271,7 +260,7 @@ fun ConfigEditorScreen(module: LocalModule) {
                     enabled = backHandler,
                     title = stringResource(R.string.webui_config_back_interceptor_title),
                     desc = stringResource(R.string.webui_config_back_interceptor_desc),
-                    value = config.getPropOrNull<String?>("backInterceptor"),
+                    value = c.backInterceptor as String?,
                     options = context.interceptorList,
                     onConfirm = {
                         if (it.value == null) {
@@ -280,18 +269,22 @@ fun ConfigEditorScreen(module: LocalModule) {
                             return@ListRadioCheckItem
                         }
 
-                        config("backInterceptor", it.value!!)
+                        slave {
+                            "backInterceptor" change it.value
+                        }
                     }
                 )
 
-                val pullToRefresh = config.getBoolProp("pullToRefresh", false)
+                val pullToRefresh = c.pullToRefresh
 
                 ListSwitchItem(
                     title = stringResource(R.string.webui_config_pull_to_refresh_title),
                     desc = stringResource(R.string.webui_config_pull_to_refresh_desc),
                     checked = pullToRefresh,
                     onChange = { isChecked ->
-                        config("pullToRefresh", isChecked)
+                        slave {
+                            "pullToRefresh" change isChecked
+                        }
                     }
                 )
 
@@ -299,7 +292,7 @@ fun ConfigEditorScreen(module: LocalModule) {
                     enabled = pullToRefresh,
                     title = stringResource(R.string.webui_config_refresh_interceptor_title),
                     desc = stringResource(R.string.webui_config_refresh_interceptor_desc),
-                    value = config.getPropOrNull<String?>("refreshInterceptor"),
+                    value = c.refreshInterceptor,
                     options = context.interceptorList,
                     onConfirm = {
                         if (it.value == null) {
@@ -308,86 +301,92 @@ fun ConfigEditorScreen(module: LocalModule) {
                             return@ListRadioCheckItem
                         }
 
-                        config("refreshInterceptor", it.value!!)
+                        slave {
+                            "refreshInterceptor" change it.value
+                        }
                     }
                 )
 
                 ListSwitchItem(
                     title = stringResource(R.string.webui_config_window_resize_title),
                     desc = stringResource(R.string.webui_config_window_resize_desc),
-                    checked = config.getBoolProp("windowResize", true),
+                    checked = c.windowResize,
                     onChange = { isChecked ->
-                        config("windowResize", isChecked)
+                        slave {
+                            "windowResize" change isChecked
+                        }
                     }
                 )
 
                 ListSwitchItem(
                     title = stringResource(R.string.webui_config_auto_style_statusbars_title),
                     desc = stringResource(R.string.webui_config_auto_style_statusbars_desc),
-                    checked = config.getBoolProp("autoStatusBarsStyle", true),
+                    checked = c.autoStatusBarsStyle,
                     onChange = { isChecked ->
-                        config("autoStatusBarsStyle", isChecked)
+                        slave {
+                            "autoStatusBarsStyle" change isChecked
+                        }
                     }
                 )
 
                 ListSwitchItem(
                     title = stringResource(R.string.webui_config_kill_shell_when_background),
                     desc = stringResource(R.string.webui_config_kill_shell_when_background_desc),
-                    checked = config.getBoolProp("killShellWhenBackground", true),
+                    checked = c.killShellWhenBackground,
                     onChange = { isChecked ->
-                        config("killShellWhenBackground", isChecked)
+                        slave {
+                            "killShellWhenBackground" change isChecked
+                        }
                     }
                 )
 
                 ListEditTextSwitchItem(
                     title = stringResource(R.string.webui_config_history_fallback_title),
                     desc = stringResource(R.string.webui_config_history_fallback_desc),
-                    value = config.getProp("historyFallbackFile", "index.html"),
-                    checked = config.getBoolProp("historyFallback", false),
+                    value = c.historyFallbackFile,
+                    checked = c.historyFallback,
                     onChange = { isChecked ->
-                        config("historyFallback", isChecked)
+                        slave {
+                            "historyFallback" change isChecked
+                        }
                     },
                     onConfirm = {
-                        config("historyFallbackFile", it)
+                        slave {
+                            "historyFallbackFile" change it
+                        }
                     }
                 )
             }
 
             ListHeader(title = stringResource(R.string.module_config))
 
-            moduleConfigMap.nullable { config ->
-                ListRadioCheckItem(
-                    title = stringResource(R.string.settings_webui_engine),
-                    desc = stringResource(R.string.settings_webui_engine_desc),
-                    value = config.getProp("webui-engine", "wx"),
-                    options = listOf(
-                        RadioOptionItem(
-                            value = "wx",
-                            title = stringResource(R.string.settings_webui_engine_wx)
-                        ),
-                        RadioOptionItem(
-                            value = "ksu",
-                            title = stringResource(R.string.settings_webui_engine_ksu)
-                        ),
-                    ),
-                    onConfirm = {
-                        module("webui-engine", it.value)
-                    }
-                )
-            }
+//            moduleConfigMap.nullable { config ->
+//                ListRadioCheckItem(
+//                    title = stringResource(R.string.settings_webui_engine),
+//                    desc = stringResource(R.string.settings_webui_engine_desc),
+//                    value = config.getProp("webui-engine", "wx"),
+//                    options = listOf(
+//                        RadioOptionItem(
+//                            value = "wx",
+//                            title = stringResource(R.string.settings_webui_engine_wx)
+//                        ),
+//                        RadioOptionItem(
+//                            value = "ksu",
+//                            title = stringResource(R.string.settings_webui_engine_ksu)
+//                        ),
+//                    ),
+//                    onConfirm = {
+//                        module("webui-engine", it.value)
+//                    }
+//                )
+//            }
 
 
-
-
-
-
-            webuiConfigMap.nullable { config ->
+            config.nullable { c ->
                 val dexFiles: MutableList<WebUIConfigDexFile> = run {
-                    val raw = config["dexFiles"]
-                    if (raw is List<*>) {
-                        val json = moshi.adapter(Any::class.java).toJson(raw)
-                        (webuiDexFileListAdapter.fromJson(json) ?: emptyList()).toMutableList()
-                    } else mutableListOf()
+                    val raw = c.dexFiles
+                    val json = moshi.adapter(Any::class.java).toJson(raw)
+                    (webuiDexFileListAdapter.fromJson(json) ?: emptyList()).toMutableList()
                 }
 
                 if (dexFiles.isEmpty()) return@nullable
@@ -412,7 +411,9 @@ fun ConfigEditorScreen(module: LocalModule) {
                                 value = path,
                                 onConfirm = { p ->
                                     dexFiles[index] = dexFiles[index].copy(path = p)
-                                    config("dexFiles", dexFiles)
+                                    slave {
+                                        "dexFiles" change dexFiles
+                                    }
                                 }
                             )
 
@@ -422,7 +423,9 @@ fun ConfigEditorScreen(module: LocalModule) {
                                 value = className,
                                 onConfirm = { c ->
                                     dexFiles[index] = dexFiles[index].copy(className = c)
-                                    config("dexFiles", dexFiles)
+                                    slave {
+                                        "dexFiles" change dexFiles
+                                    }
                                 }
                             )
 
@@ -441,7 +444,10 @@ fun ConfigEditorScreen(module: LocalModule) {
                                 Spacer(modifier = Modifier.weight(1f))
                                 DexRemove {
                                     dexFiles.remove(it)
-                                    config("dexFiles", dexFiles)
+
+                                    slave {
+                                        "dexFiles" change dexFiles
+                                    }
                                 }
                             }
                         }

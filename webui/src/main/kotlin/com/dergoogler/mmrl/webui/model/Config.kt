@@ -10,8 +10,13 @@ import android.graphics.drawable.Icon
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import com.dergoogler.mmrl.platform.PlatformManager
 import com.dergoogler.mmrl.platform.content.LocalModule
+import com.dergoogler.mmrl.platform.file.Path
 import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.platform.hiddenApi.HiddenPackageManager
 import com.dergoogler.mmrl.platform.hiddenApi.HiddenUserManager
@@ -29,6 +34,23 @@ import com.squareup.moshi.Types
 import dalvik.system.BaseDexClassLoader
 import dalvik.system.DexClassLoader
 import dalvik.system.InMemoryDexClassLoader
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.nio.ByteBuffer
 import java.util.concurrent.ConcurrentHashMap
 
@@ -95,6 +117,7 @@ data class WebUIConfigRequire(
 enum class DexSourceType {
     @Json(name = "dex")
     DEX,
+
     @Json(name = "apk")
     APK
 }
@@ -148,8 +171,7 @@ data class WebUIConfigDexFile(
                 return null
             }
 
-            @Suppress("UNCHECKED_CAST")
-            val clazz = rawClass as Class<out WXInterface>
+            @Suppress("UNCHECKED_CAST") val clazz = rawClass as Class<out WXInterface>
             val instance = JavaScriptInterface(clazz)
 
             // 4. Cache the new instance and return it.
@@ -206,7 +228,6 @@ data class WebUIConfigDexFile(
     }
 }
 
-@Immutable
 @JsonClass(generateAdapter = true)
 data class WebUIConfig(
     val modId: ModId = ModId.EMPTY,
@@ -277,8 +298,7 @@ data class WebUIConfig(
 
             shortcutIntent.action = Intent.ACTION_VIEW
 
-            val bitmap =
-                iconFile.newInputStream().buffered().use { BitmapFactory.decodeStream(it) }
+            val bitmap = iconFile.newInputStream().buffered().use { BitmapFactory.decodeStream(it) }
 
             val shortcut =
                 ShortcutInfo.Builder(context, shortcutId).setShortLabel(title!!).setLongLabel(title)
@@ -289,93 +309,153 @@ data class WebUIConfig(
         }
     }
 
+    fun toJson(intents: Int = 2): String = jsonAdapter.indent(" ".repeat(intents)).toJson(this)
+
+    fun Map<String, Any?>.toJson(intents: Int = 2): String =
+        mapAdapter.indent(" ".repeat(intents)).toJson(this)
+
+    suspend fun <V : Any?> save(builderAction: MutableConfig<V>.() -> Unit) {
+        val updates = buildMutableConfig(builderAction)
+        if (updates.isEmpty()) return
+
+        withContext(Dispatchers.IO) {
+            val (_, overrideFile) = modId.configFiles
+            val overrideMap = overrideFile.readConfig().toConfigMap()?.toMutableMap()
+            overrideMap?.putAll(updates)
+            overrideFile.writeText(mapAdapter.indent("  ").toJson(overrideMap))
+
+            val newConfig = modId.loadConfig()
+            _configState.update { it + (modId to newConfig) }
+
+            synchronized(configFlows) {
+                val flow = configFlows[modId]
+                if (flow != null) {
+                    flow.value = newConfig
+                }
+            }
+        }
+    }
+
     companion object {
         const val TAG = "WebUIConfig"
 
-        /**
-         * Extension property for [ModId] to retrieve its associated [WebUIConfig].
-         *
-         * This property attempts to load and parse a `config.json` or `config.mmrl.json`
-         * file from the module's `webroot` directory.
-         * - It first constructs the path to the module's directory (`/data/adb/modules/<module_id>`).
-         * - Then, it looks for `config.json` or `config.mmrl.json` within the `webroot` subdirectory.
-         * - If a configuration file is found, its content is read and parsed into a [WebUIConfig] object.
-         * - If no configuration file is found or if parsing fails, a default [WebUIConfig]
-         *   instance is returned, initialized with the current [ModId].
-         *
-         * @return The parsed [WebUIConfig] if a configuration file is found and valid,
-         *         otherwise a default [WebUIConfig] for the given [ModId].
-         */
-        val ModId.asWebUIConfig: WebUIConfig
-            get() {
-                val config = WebUIConfig(this)
-
-                val configFileInWebRootDir =
-                    webrootDir.fromPaths("config.json", "config.mmrl.json") ?: return config
-
-                val configFileInConfigDir =
-                    moduleConfigDir.fromPaths("config.json") ?: return config
-
-                val jsonStringWebRoot = configFileInWebRootDir.readText()
-                val jsonStringConfig = configFileInConfigDir.readText()
-
-                val merged = jsonStringWebRoot.merge(jsonStringConfig) ?: return config
-
-                return merged.copy(modId = this)
-            }
-
-        val LocalModule.webUiConfig get() = id.asWebUIConfig
-        
-        private val mapType = Types.newParameterizedType(Map::class.java, String::class.java, Any::class.java)
+        private val mapType =
+            Types.newParameterizedType(Map::class.java, String::class.java, Any::class.java)
         private val mapAdapter = moshi.adapter<Map<String, Any?>>(mapType)
         private val jsonAdapter = moshi.adapter(WebUIConfig::class.java)
 
-        private fun String.merge(b: String): WebUIConfig? {
-            val aMap = mapAdapter.fromJson(this)
-            val bMap = mapAdapter.fromJson(b)
+        fun fromJson(json: String): WebUIConfig? = jsonAdapter.fromJson(json)
 
-            if (aMap == null || bMap == null) {
-                return null
+        private val _configState = MutableStateFlow<Map<ModId, WebUIConfig>>(emptyMap())
+
+        private val configFlows = mutableMapOf<ModId, MutableStateFlow<WebUIConfig>>()
+
+        private val ModId.configFiles: Pair<SuFile?, SuFile>
+            get() {
+                val webrootConfig = webrootDir.fromPaths("config.json", "config.mmrl.json")
+                val moduleConfigConfig = SuFile(moduleConfigDir, "config.webroot.json")
+
+                if (!moduleConfigConfig.exists()) {
+                    moduleConfigConfig.createNewFile()
+                    moduleConfigConfig.writeText("{}")
+                }
+
+                return Pair(
+                    webrootConfig, moduleConfigConfig
+                )
             }
 
-            val mergedMap = mergeMaps(aMap, bMap)
-            val mergedJson = mapAdapter.toJson(mergedMap)
+        val ModId.asWebUIConfigFlow: StateFlow<WebUIConfig>
+            get() = synchronized(configFlows) {
+                configFlows.getOrPut(this) {
+                    val initialConfig = loadConfig()
+                    _configState.update { it + (this to initialConfig) }
+                    MutableStateFlow(initialConfig)
+                }
+            }
 
-            return jsonAdapter.fromJson(mergedJson)!!
+        val ModId.asWebUIConfig: WebUIConfig
+            get() = _configState.value[this] ?: loadConfig().also { config ->
+                _configState.update { current -> current + (this to config) }
+            }
+
+        val LocalModule.webUiConfig: WebUIConfig
+            get() = id.asWebUIConfig
+
+        private fun ModId.loadConfig(): WebUIConfig {
+            val (baseFile, overrideFile) = configFiles
+            val baseJson = baseFile.readConfig()
+            val overrideJson = overrideFile.readText()
+            val override = overrideJson.toConfigMap() ?: mutableMapOf()
+            val mergedMap = baseJson.toConfigMap()?.deepMerge(override)
+            return mergedMap?.let { jsonAdapter.fromJson(mapAdapter.toJson(it)) }?.copy(modId = this) ?: WebUIConfig(modId = this)
         }
 
-        private fun WebUIConfig.merge(b: WebUIConfig): WebUIConfig? {
-            val aJson = jsonAdapter.toJson(this)
-            val bJson = jsonAdapter.toJson(b)
-
-            return aJson.merge(bJson)
+        private fun SuFile?.readConfig(): String? = try {
+            this?.takeIf { it.exists() }?.readText()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error reading config file ${this?.path}", e)
+            null
         }
 
-        private fun mergeMaps(a: Map<String, Any?>, b: Map<String, Any?>): Map<String, Any?> {
-            val result = mutableMapOf<String, Any?>()
-            val keys = a.keys + b.keys
+        private fun String?.toConfigMap(): Map<String, Any?>? {
+            return this?.let { json ->
+                runCatching { mapAdapter.fromJson(json) }.getOrNull()
+            }
+        }
 
-            for (key in keys) {
-                val aVal = a[key]
-                val bVal = b[key]
-
-                val aMapVal = aVal.asStringMap()
-                val bMapVal = bVal.asStringMap()
-
+        private fun Map<String, Any?>.deepMerge(
+            other: Map<String, Any?>,
+            listMergeStrategy: ListMergeStrategy = ListMergeStrategy.REPLACE
+        ): Map<String, Any?> {
+            val result = this.toMutableMap()
+            for ((key, overrideValue) in other) {
+                val baseValue = result[key]
                 result[key] = when {
-                    aMapVal != null && bMapVal != null -> mergeMaps(aMapVal, bMapVal)
-                    bVal != null -> bVal // b overrides a
-                    else -> aVal
+                    baseValue is Map<*, *> && overrideValue is Map<*, *> -> {
+                        baseValue.asStringMap()
+                            ?.deepMerge(overrideValue.asStringMap() ?: emptyMap(), listMergeStrategy)
+                    }
+
+                    baseValue is List<*> && overrideValue is List<*> -> {
+                        when (listMergeStrategy) {
+                            ListMergeStrategy.REPLACE -> overrideValue
+                            ListMergeStrategy.APPEND -> baseValue + overrideValue
+                            ListMergeStrategy.DEDUPLICATE -> (baseValue + overrideValue).distinct()
+                        }
+                    }
+
+                    overrideValue != null -> overrideValue
+                    else -> baseValue
                 }
             }
             return result
         }
 
         private fun Any?.asStringMap(): Map<String, Any?>? {
-            return (this as? Map<*, *>)?.mapNotNull {
-                val key = it.key as? String ?: return@mapNotNull null
-                key to it.value
+            return (this as? Map<*, *>)?.mapNotNull { (key, value) ->
+                (key as? String)?.let { it to value }
             }?.toMap()
         }
+
+        enum class ListMergeStrategy {
+            REPLACE,
+            APPEND,
+            DEDUPLICATE
+        }
+
+        private class MutableConfigMap<V : Any?>() : LinkedHashMap<String, V>(), MutableConfig<V> {
+            override infix fun String.change(that: V): V? = put(this, that)
+        }
+
+        private inline fun <V : Any?> buildMutableConfig(builder: MutableConfig<V>.() -> Unit): Map<String, V> {
+            val map = MutableConfigMap<V>()
+            map.builder()
+            return map
+        }
     }
+}
+
+interface MutableConfig<V> : MutableMap<String, V> {
+    infix fun String.change(that: V): V?
 }
