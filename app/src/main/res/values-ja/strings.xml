@@ -97,4 +97,6 @@
     <string name="settings_date_pattern_dialog_desc">表示される日付のパターン:\n[color=primary]%1$s[/color]</string>
     <string name="export_module_config_json">モジュールの構成を JSON でエクスポート</string>
     <string name="webui_config_exit_confirm_desc">WebUI 終了時の確認ダイアログを有効化します。</string>
+    <string name="webui_config_kill_shell_when_background">シェルを強制終了</string>
+    <string name="webui_config_kill_shell_when_background_desc">WebUI をバックグラウンド時にシェルを強制終了します。バックグラウンドコードの実行を防止します。</string>
 </resources>
