@@ -40,10 +40,12 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.dergoogler.mmrl.ext.moshi.moshi
+import com.dergoogler.mmrl.ext.navigateSingleTopTo
 import com.dergoogler.mmrl.ext.none
 import com.dergoogler.mmrl.ext.nullable
 import com.dergoogler.mmrl.ext.shareFile
 import com.dergoogler.mmrl.ext.shareText
+import com.dergoogler.mmrl.ext.takeTrue
 import com.dergoogler.mmrl.platform.content.LocalModule
 import com.dergoogler.mmrl.platform.file.SuFile
 import com.dergoogler.mmrl.platform.model.ModId.Companion.moduleConfigDir
@@ -60,12 +62,20 @@ import com.dergoogler.mmrl.ui.component.listItem.ListHeader
 import com.dergoogler.mmrl.ui.component.listItem.ListItemDefaults
 import com.dergoogler.mmrl.ui.component.listItem.ListRadioCheckItem
 import com.dergoogler.mmrl.ui.component.listItem.ListSwitchItem
+import com.dergoogler.mmrl.ui.component.listItem.dsl.List
+import com.dergoogler.mmrl.ui.component.listItem.dsl.component.RadioDialogItem
+import com.dergoogler.mmrl.ui.component.listItem.dsl.component.SwitchItem
+import com.dergoogler.mmrl.ui.component.listItem.dsl.component.TextEditDialogItem
+import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Description
+import com.dergoogler.mmrl.ui.component.listItem.dsl.component.item.Title
 import com.dergoogler.mmrl.ui.providable.LocalNavController
+import com.dergoogler.mmrl.webui.model.DexSourceType
 import com.dergoogler.mmrl.webui.model.MutableConfig
 import com.dergoogler.mmrl.webui.model.WebUIConfig
 import com.dergoogler.mmrl.webui.model.WebUIConfig.Companion.asWebUIConfigFlow
 import com.dergoogler.mmrl.webui.model.WebUIConfigDexFile
 import com.dergoogler.mmrl.wx.R
+import com.dergoogler.mmrl.wx.ui.navigation.graphs.ModulesScreen
 import com.dergoogler.mmrl.wx.util.getBoolProp
 import com.dergoogler.mmrl.wx.util.getProp
 import com.dergoogler.mmrl.wx.util.getPropOrNull
@@ -73,13 +83,6 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Types
 import kotlinx.coroutines.launch
 
-private val mapAdapter: JsonAdapter<Map<String, Any>> = moshi.adapter<Map<String, Any>>(
-    Types.newParameterizedType(Map::class.java, String::class.java, Any::class.java)
-).indent("  ")
-
-private val webuiDexFileListAdapter: JsonAdapter<List<WebUIConfigDexFile>> = moshi.adapter(
-    Types.newParameterizedType(List::class.java, WebUIConfigDexFile::class.java)
-)
 
 private val Context.interceptorList: List<RadioOptionItem<String?>>
     get() = listOf(
@@ -92,6 +95,7 @@ private val Context.interceptorList: List<RadioOptionItem<String?>>
             title = getString(R.string.controlled_by_javascript)
         ),
     )
+
 
 @Composable
 fun ConfigEditorScreen(module: LocalModule) {
@@ -187,178 +191,184 @@ fun ConfigEditorScreen(module: LocalModule) {
         ) {
             ListHeader(title = stringResource(R.string.webui_config))
 
-            config.nullable { c ->
-
-
-                Log.d("ConfigEditorScreen", "ConfigEditorScreen: $c")
-
-                ListEditTextItem(
-                    title = stringResource(R.string.webui_config_title_title),
-                    desc = c.title ?: stringResource(R.string.webui_config_title_desc),
-                    itemTextStyle = ListItemDefaults.itemStyle.apply {
-                        if (c.title == null) {
-                            copy(
-                                descTextStyle = MaterialTheme.typography.bodyMedium.copy(
-                                    fontStyle = FontStyle.Italic
-                                )
+            ListEditTextItem(
+                title = stringResource(R.string.webui_config_title_title),
+                desc = config.title ?: stringResource(R.string.webui_config_title_desc),
+                itemTextStyle = ListItemDefaults.itemStyle.apply {
+                    if (config.title == null) {
+                        copy(
+                            descTextStyle = MaterialTheme.typography.bodyMedium.copy(
+                                fontStyle = FontStyle.Italic
                             )
-                        }
-                    },
-                    value = c.title ?: "",
-                    onConfirm = {
-                        slave {
-                            "title" change it
-                        }
+                        )
                     }
-                )
+                },
+                value = config.title ?: "",
+                onConfirm = {
+                    slave {
+                        "title" change it
+                    }
+                }
+            )
 
-                ListEditTextItem(
-                    title = stringResource(R.string.webui_config_icon_title),
-                    desc = c.icon ?: stringResource(R.string.webui_config_icon_desc),
-                    itemTextStyle = ListItemDefaults.itemStyle.apply {
-                        if (c.icon == null) {
-                            copy(
-                                descTextStyle = MaterialTheme.typography.bodyMedium.copy(
-                                    fontStyle = FontStyle.Italic
-                                )
+            ListEditTextItem(
+                title = stringResource(R.string.webui_config_icon_title),
+                desc = config.icon ?: stringResource(R.string.webui_config_icon_desc),
+                itemTextStyle = ListItemDefaults.itemStyle.apply {
+                    if (config.icon == null) {
+                        copy(
+                            descTextStyle = MaterialTheme.typography.bodyMedium.copy(
+                                fontStyle = FontStyle.Italic
                             )
-                        }
-                    },
-                    value = c.icon ?: "",
-                    onConfirm = {
-                        slave {
-                            "icon" change it
-                        }
+                        )
                     }
-                )
-
-                ListSwitchItem(
-                    title = stringResource(R.string.webui_config_exit_confirm_title),
-                    desc = stringResource(R.string.webui_config_exit_confirm_desc),
-                    checked = c.exitConfirm,
-                    onChange = { isChecked ->
-                        slave {
-                            "exitConfirm" change isChecked
-                        }
+                },
+                value = config.icon ?: "",
+                onConfirm = {
+                    slave {
+                        "icon" change it
                     }
-                )
+                }
+            )
 
-                val backHandler = c.backHandler ?: true
+            ListButtonItem(
+                title = stringResource(R.string.plugins),
+                desc = stringResource(R.string.plugins_desc),
+                onClick = {
+                    navController.navigateSingleTopTo(
+                        route = ModulesScreen.Plugins.route,
+                        args = mapOf("id" to module.id.toString())
+                    )
+                }
+            )
 
-                ListSwitchItem(
-                    title = stringResource(R.string.webui_config_back_handler_title),
-                    desc = stringResource(R.string.webui_config_back_handler_desc),
-                    checked = backHandler,
-                    onChange = { isChecked ->
-                        slave {
-                            "backHandler" change isChecked
-                        }
-                    },
-                )
 
-                ListRadioCheckItem(
-                    enabled = backHandler,
-                    title = stringResource(R.string.webui_config_back_interceptor_title),
-                    desc = stringResource(R.string.webui_config_back_interceptor_desc),
-                    value = c.backInterceptor as String?,
-                    options = context.interceptorList,
-                    onConfirm = {
-                        if (it.value == null) {
-                            Toast.makeText(context, "Please select an option", Toast.LENGTH_SHORT)
-                                .show()
-                            return@ListRadioCheckItem
-                        }
-
-                        slave {
-                            "backInterceptor" change it.value
-                        }
+            ListSwitchItem(
+                title = stringResource(R.string.webui_config_exit_confirm_title),
+                desc = stringResource(R.string.webui_config_exit_confirm_desc),
+                checked = config.exitConfirm,
+                onChange = { isChecked ->
+                    slave {
+                        "exitConfirm" change isChecked
                     }
-                )
+                }
+            )
 
-                val pullToRefresh = c.pullToRefresh
+            val backHandler = config.backHandler ?: true
 
-                ListSwitchItem(
-                    title = stringResource(R.string.webui_config_pull_to_refresh_title),
-                    desc = stringResource(R.string.webui_config_pull_to_refresh_desc),
-                    checked = pullToRefresh,
-                    onChange = { isChecked ->
-                        slave {
-                            "pullToRefresh" change isChecked
-                        }
+            ListSwitchItem(
+                title = stringResource(R.string.webui_config_back_handler_title),
+                desc = stringResource(R.string.webui_config_back_handler_desc),
+                checked = backHandler,
+                onChange = { isChecked ->
+                    slave {
+                        "backHandler" change isChecked
                     }
-                )
+                },
+            )
 
-                ListRadioCheckItem(
-                    enabled = pullToRefresh,
-                    title = stringResource(R.string.webui_config_refresh_interceptor_title),
-                    desc = stringResource(R.string.webui_config_refresh_interceptor_desc),
-                    value = c.refreshInterceptor,
-                    options = context.interceptorList,
-                    onConfirm = {
-                        if (it.value == null) {
-                            Toast.makeText(context, "Please select an option", Toast.LENGTH_SHORT)
-                                .show()
-                            return@ListRadioCheckItem
-                        }
-
-                        slave {
-                            "refreshInterceptor" change it.value
-                        }
+            ListRadioCheckItem(
+                enabled = backHandler,
+                title = stringResource(R.string.webui_config_back_interceptor_title),
+                desc = stringResource(R.string.webui_config_back_interceptor_desc),
+                value = config.backInterceptor as String?,
+                options = context.interceptorList,
+                onConfirm = {
+                    if (it.value == null) {
+                        Toast.makeText(context, "Please select an option", Toast.LENGTH_SHORT)
+                            .show()
+                        return@ListRadioCheckItem
                     }
-                )
 
-                ListSwitchItem(
-                    title = stringResource(R.string.webui_config_window_resize_title),
-                    desc = stringResource(R.string.webui_config_window_resize_desc),
-                    checked = c.windowResize,
-                    onChange = { isChecked ->
-                        slave {
-                            "windowResize" change isChecked
-                        }
+                    slave {
+                        "backInterceptor" change it.value
                     }
-                )
+                }
+            )
 
-                ListSwitchItem(
-                    title = stringResource(R.string.webui_config_auto_style_statusbars_title),
-                    desc = stringResource(R.string.webui_config_auto_style_statusbars_desc),
-                    checked = c.autoStatusBarsStyle,
-                    onChange = { isChecked ->
-                        slave {
-                            "autoStatusBarsStyle" change isChecked
-                        }
+            val pullToRefresh = config.pullToRefresh
+
+            ListSwitchItem(
+                title = stringResource(R.string.webui_config_pull_to_refresh_title),
+                desc = stringResource(R.string.webui_config_pull_to_refresh_desc),
+                checked = pullToRefresh,
+                onChange = { isChecked ->
+                    slave {
+                        "pullToRefresh" change isChecked
                     }
-                )
+                }
+            )
 
-                ListSwitchItem(
-                    title = stringResource(R.string.webui_config_kill_shell_when_background),
-                    desc = stringResource(R.string.webui_config_kill_shell_when_background_desc),
-                    checked = c.killShellWhenBackground,
-                    onChange = { isChecked ->
-                        slave {
-                            "killShellWhenBackground" change isChecked
-                        }
+            ListRadioCheckItem(
+                enabled = pullToRefresh,
+                title = stringResource(R.string.webui_config_refresh_interceptor_title),
+                desc = stringResource(R.string.webui_config_refresh_interceptor_desc),
+                value = config.refreshInterceptor,
+                options = context.interceptorList,
+                onConfirm = {
+                    if (it.value == null) {
+                        Toast.makeText(context, "Please select an option", Toast.LENGTH_SHORT)
+                            .show()
+                        return@ListRadioCheckItem
                     }
-                )
 
-                ListEditTextSwitchItem(
-                    title = stringResource(R.string.webui_config_history_fallback_title),
-                    desc = stringResource(R.string.webui_config_history_fallback_desc),
-                    value = c.historyFallbackFile,
-                    checked = c.historyFallback,
-                    onChange = { isChecked ->
-                        slave {
-                            "historyFallback" change isChecked
-                        }
-                    },
-                    onConfirm = {
-                        slave {
-                            "historyFallbackFile" change it
-                        }
+                    slave {
+                        "refreshInterceptor" change it.value
                     }
-                )
-            }
+                }
+            )
 
-            ListHeader(title = stringResource(R.string.module_config))
+            ListSwitchItem(
+                title = stringResource(R.string.webui_config_window_resize_title),
+                desc = stringResource(R.string.webui_config_window_resize_desc),
+                checked = config.windowResize,
+                onChange = { isChecked ->
+                    slave {
+                        "windowResize" change isChecked
+                    }
+                }
+            )
+
+            ListSwitchItem(
+                title = stringResource(R.string.webui_config_auto_style_statusbars_title),
+                desc = stringResource(R.string.webui_config_auto_style_statusbars_desc),
+                checked = config.autoStatusBarsStyle,
+                onChange = { isChecked ->
+                    slave {
+                        "autoStatusBarsStyle" change isChecked
+                    }
+                }
+            )
+
+            ListSwitchItem(
+                title = stringResource(R.string.webui_config_kill_shell_when_background),
+                desc = stringResource(R.string.webui_config_kill_shell_when_background_desc),
+                checked = config.killShellWhenBackground,
+                onChange = { isChecked ->
+                    slave {
+                        "killShellWhenBackground" change isChecked
+                    }
+                }
+            )
+
+            ListEditTextSwitchItem(
+                title = stringResource(R.string.webui_config_history_fallback_title),
+                desc = stringResource(R.string.webui_config_history_fallback_desc),
+                value = config.historyFallbackFile,
+                checked = config.historyFallback,
+                onChange = { isChecked ->
+                    slave {
+                        "historyFallback" change isChecked
+                    }
+                },
+                onConfirm = {
+                    slave {
+                        "historyFallbackFile" change it
+                    }
+                }
+            )
+
+//            ListHeader(title = stringResource(R.string.module_config))
 
 //            moduleConfigMap.nullable { config ->
 //                ListRadioCheckItem(
@@ -380,103 +390,8 @@ fun ConfigEditorScreen(module: LocalModule) {
 //                    }
 //                )
 //            }
-
-
-            config.nullable { c ->
-                val dexFiles: MutableList<WebUIConfigDexFile> = run {
-                    val raw = c.dexFiles
-                    val json = moshi.adapter(Any::class.java).toJson(raw)
-                    (webuiDexFileListAdapter.fromJson(json) ?: emptyList()).toMutableList()
-                }
-
-                if (dexFiles.isEmpty()) return@nullable
-
-                ListHeader(title = stringResource(R.string.dex_files))
-
-                dexFiles.forEachIndexed { index, it ->
-                    if (it.path == null || it.className == null) return@forEachIndexed
-
-                    Card {
-                        val path = it.path!!
-                        val className = it.className!!
-
-                        Column(
-                            modifier = Modifier
-                                .relative()
-                                .padding(16.dp)
-                        ) {
-                            ListEditTextItem(
-                                title = stringResource(R.string.path),
-                                desc = path,
-                                value = path,
-                                onConfirm = { p ->
-                                    dexFiles[index] = dexFiles[index].copy(path = p)
-                                    slave {
-                                        "dexFiles" change dexFiles
-                                    }
-                                }
-                            )
-
-                            ListEditTextItem(
-                                title = stringResource(R.string.class_name),
-                                desc = className,
-                                value = className,
-                                onConfirm = { c ->
-                                    dexFiles[index] = dexFiles[index].copy(className = c)
-                                    slave {
-                                        "dexFiles" change dexFiles
-                                    }
-                                }
-                            )
-
-                            HorizontalDivider(
-                                thickness = 1.5.dp,
-                                color = MaterialTheme.colorScheme.surface,
-                                modifier = Modifier.padding(top = 8.dp)
-                            )
-
-                            Row(
-                                modifier = Modifier
-                                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                                    .fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Spacer(modifier = Modifier.weight(1f))
-                                DexRemove {
-                                    dexFiles.remove(it)
-
-                                    slave {
-                                        "dexFiles" change dexFiles
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-            }
         }
     }
-}
-
-@Composable
-private fun DexRemove(
-    onClick: () -> Unit,
-) = FilledTonalButton(
-    onClick = onClick,
-    contentPadding = PaddingValues(horizontal = 12.dp)
-) {
-    Icon(
-        modifier = Modifier.size(20.dp),
-        painter = painterResource(id = R.drawable.trash),
-        contentDescription = null
-    )
-
-    Spacer(modifier = Modifier.width(6.dp))
-    Text(
-        text = stringResource(id = R.string.delete)
-    )
 }
 
 @Composable

@@ -100,4 +100,14 @@
     <string name="developer">Developer</string>
     <string name="webui_config_kill_shell_when_background">Kill Shell</string>
     <string name="webui_config_kill_shell_when_background_desc">Kill the Shell when the WebUI moves into the background. Prevent\'s background code execution.</string>
+    <string name="cache">Cache</string>
+    <string name="no">No</string>
+    <string name="yes">Yes</string>
+    <string name="dex_source_type_dex">Dalvik Executable</string>
+    <string name="dex_source_type_apk">Android Package</string>
+    <string name="plugin_type">Plugin Type</string>
+    <string name="dex_source_type_dex_desc">Loads raw dex bytecode files for lightweight code plugins</string>
+    <string name="dex_source_type_apk_desc">Loads full APK files as modular plugins with resources</string>
+    <string name="plugins">Plugins</string>
+    <string name="plugins_desc">Extend the WebUI to fit it your needs</string>
 </resources>
